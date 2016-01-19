@@ -15,7 +15,7 @@ import java.sql.SQLException;
 @Component(value = "analyzerCallBackHandler")
 public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandler {
 
-    private DataSource ds;
+    private DataSource dataSource;
 
     private TraverseConfigSchema traverseConfigSchema;
 
@@ -26,7 +26,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     }
 
     public RowAnalyzerCallBackHandlerImpl(DataSource dataSource, TraverseConfigSchema traverseConfigSchema) {
-        this.ds = ds;
+        this.dataSource = dataSource;
         this.traverseConfigSchema = traverseConfigSchema;
     }
 

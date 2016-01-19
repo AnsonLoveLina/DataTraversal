@@ -14,12 +14,10 @@ import java.util.HashMap;
 /**
  * Created by zhouyi1 on 2016/1/19 0019.
  */
-@Component
-public class TraverseConfigSchemaFactory {
+public class TraverseConfigSchemaFactory    {
+    private static HashMap<String,TraverseConfigSchema> schemas = new HashMap<String,TraverseConfigSchema>();
 
-    HashMap<String,TraverseConfigSchema> schemas = new HashMap<String,TraverseConfigSchema>();
-
-    public TraverseConfigSchema getObject(String serverName) throws Exception {
+    public static TraverseConfigSchema getSchema(String serverName) {
         return schemas.get(serverName);
     }
 }

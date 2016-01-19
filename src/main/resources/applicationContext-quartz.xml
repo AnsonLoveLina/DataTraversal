@@ -2,7 +2,15 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
-    <bean id="ry" class="cn.sinobest.job.TraverseRy"/>
+
+    <bean id="ry" class="cn.sinobest.job.TraverseRy">
+        <property name="callBackHandler" ref="analyzerCallBackHandler"/>
+        <property name="serviceNames">
+            <set value-type="java.lang.String">
+                <value>ss</value>
+            </set>
+        </property>
+    </bean>
 
     <task:scheduled-tasks>
         <task:scheduled ref="ry" method="execute" fixed-delay="6000"/>
