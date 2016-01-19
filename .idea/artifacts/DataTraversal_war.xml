@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="DataTraversal:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="DataTraversal.war">
+      <element id="artifact" artifact-name="DataTraversal:war exploded" />
+    </root>
+  </artifact>
+</component>
