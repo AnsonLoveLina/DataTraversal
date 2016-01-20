@@ -48,11 +48,11 @@ public class TraverseDataService {
     public TraverseDataService() {
     }
 
-    public TraverseDataService(String schemaName,IRowAnalyzerCallBackHandler rowCallbackHandler) {
-        this.traverseConfigSchema = TraverseConfigSchemaFactory.getSchema(schemaName);
+    public TraverseDataService(TraverseConfigSchema traverseConfigSchema,IRowAnalyzerCallBackHandler rowCallbackHandler) {
+        this.traverseConfigSchema = traverseConfigSchema;
         this.rowCallbackHandler = rowCallbackHandler;
         if(traverseConfigSchema==null)
-            logger.error(schemaName+"in traverseConfig didn't exists!");
+            logger.error(traverseConfigSchema.getSchemaName()+"in traverseConfig didn't exists!");
         timeManager.init(traverseConfigSchema.getTimestampComment(), traverseConfigSchema.getTimestampKey());
 //        initRegex();
     }
@@ -64,14 +64,14 @@ public class TraverseDataService {
                 timeManager.updateTimestamp(lastTime);
                 try{
                     rowCallbackHandler.setComplete(false);
-                    jdbcTemplate.query(traverseConfigSchema.getDetailQuery(), new Object[]{lastTime}, rowCallbackHandler);
+                    jdbcTemplate.query(traverseConfigSchema.getDetailQuery().toString(), new Object[]{lastTime}, rowCallbackHandler);
                 }finally {
                     timeManager.overTimestamp();
                 }
             }else{
                 timeManager.insertTimestamp();
                 rowCallbackHandler.setComplete(true);
-                jdbcTemplate.query(traverseConfigSchema.getFullEndUpdateSql(), rowCallbackHandler);
+                jdbcTemplate.query(traverseConfigSchema.getFullQuery().toString(), rowCallbackHandler);
             }
         } catch (Exception e) {
             e.printStackTrace();

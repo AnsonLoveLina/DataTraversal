@@ -3,16 +3,16 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <bean id="ry" class="cn.sinobest.job.TraverseRy">
-        <property name="callBackHandler" ref="analyzerCallBackHandler"/>
+    <bean id="job" class="cn.sinobest.job.TraverseJob">
+        <property name="callBackHandlerBeanName" value="analyzerCallBackHandler"/>
         <property name="serviceNames">
             <set value-type="java.lang.String">
-                <value>ss</value>
+                <value>B_ASJ_ZAJ_RY</value>
             </set>
         </property>
     </bean>
 
     <task:scheduled-tasks>
-        <task:scheduled ref="ry" method="execute" fixed-delay="6000"/>
+        <task:scheduled ref="job" method="execute" fixed-delay="6000"/>
     </task:scheduled-tasks>
 </beans>
