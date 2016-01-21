@@ -1,6 +1,7 @@
 package cn.sinobest.core.config.po;
 
 import cn.sinobest.core.common.jaxb.XmlObject;
+import cn.sinobest.core.common.param.Param;
 import cn.sinobest.core.common.util.SqlUtil;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
 
@@ -73,8 +74,10 @@ public class TraverseConfigSchema {
         resultStrColumns = columnTemps;
         if(!analyzerColumns.isEmpty())
             resultStrColumns.removeAll(analyzerColumns);
-        if(resultStrColumns.contains("SYSTEMID"))
-            resultStrColumns.remove("SYSTEMID");
+        resultStrColumns.remove("SYSTEMID");
+        resultStrColumns.add(Param.BSHID.toString());
+        resultStrColumns.add(Param.BSHLX.toString());
+
 
         this.insertSql = SqlUtil.getInsertSql(resultTable,resultStrColumns);
     }

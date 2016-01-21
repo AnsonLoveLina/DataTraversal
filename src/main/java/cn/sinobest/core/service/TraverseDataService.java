@@ -5,6 +5,7 @@ import cn.sinobest.core.config.po.TraverseConfigSchema;
 import cn.sinobest.core.config.po.TraverseConfigSchemaFactory;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
 import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
+import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,8 @@ public class TraverseDataService {
     }
 
     public TraverseDataService(TraverseConfigSchema traverseConfigSchema,IRowAnalyzerCallBackHandler rowCallbackHandler) {
+        Preconditions.checkNotNull(traverseConfigSchema);
+        Preconditions.checkNotNull(rowCallbackHandler);
         this.traverseConfigSchema = traverseConfigSchema;
         this.rowCallbackHandler = rowCallbackHandler;
         if(traverseConfigSchema==null)

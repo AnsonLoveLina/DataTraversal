@@ -5,6 +5,7 @@ import cn.sinobest.core.config.po.TraverseConfigSchema;
 import cn.sinobest.core.config.po.TraverseConfigSchemaFactory;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
 import cn.sinobest.core.service.TraverseDataService;
+import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
