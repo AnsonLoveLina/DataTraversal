@@ -2,6 +2,7 @@ package cn.sinobest.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -41,8 +42,10 @@ public class TimeManager {
 //            }
             String timestamp = jdbcTemplate.queryForObject(sql, String.class, this.TIMESTAMP_KEY_ZYAQ);
             return timestamp;
-        } catch (Exception e) {
-            logger.error(TIMESTAMP_KEY_ZYAQ + "获取比对时间戳出错！", e);
+        } catch (EmptyResultDataAccessException e){
+            logger.trace(TIMESTAMP_KEY_ZYAQ + "时间戳不存在将采用全量！");
+        }catch (Exception e) {
+            logger.error(TIMESTAMP_KEY_ZYAQ + "获取比对时间戳出错！",e);
         }
         return "";
     }

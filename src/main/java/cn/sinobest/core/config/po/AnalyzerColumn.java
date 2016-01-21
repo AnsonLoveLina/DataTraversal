@@ -32,4 +32,14 @@ public class AnalyzerColumn {
     public void setSpecialExpress(String specialExpress) {
         this.specialExpress = specialExpress;
     }
+
+    @Override
+    public int hashCode() {
+        return analyzerColumn.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return toString().equals(obj);
+    }
 }

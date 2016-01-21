@@ -4,14 +4,16 @@ import cn.sinobest.core.TimeManager;
 import cn.sinobest.core.config.po.TraverseConfigSchema;
 import cn.sinobest.core.config.po.TraverseConfigSchemaFactory;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
-import cn.sinobest.core.handler.impl.RowAnalyzerCallBackHandlerImpl;
+import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -37,7 +39,7 @@ public class TraverseDataService {
 
     protected TraverseConfigSchema traverseConfigSchema;
 
-    @Resource
+    @Autowired
     private TimeManager timeManager;
 
     private IRowAnalyzerCallBackHandler rowCallbackHandler;
@@ -52,9 +54,13 @@ public class TraverseDataService {
         this.traverseConfigSchema = traverseConfigSchema;
         this.rowCallbackHandler = rowCallbackHandler;
         if(traverseConfigSchema==null)
-            logger.error(traverseConfigSchema.getSchemaName()+"in traverseConfig didn't exists!");
-        timeManager.init(traverseConfigSchema.getTimestampComment(), traverseConfigSchema.getTimestampKey());
+            logger.error(traverseConfigSchema+"in traverseConfig didn't exists!");
 //        initRegex();
+    }
+
+    @PostConstruct
+    public void init(){
+        timeManager.init(traverseConfigSchema.getTimestampComment(), traverseConfigSchema.getTimestampKey());
     }
 
     public void execute(){
@@ -72,6 +78,7 @@ public class TraverseDataService {
                 timeManager.insertTimestamp();
                 rowCallbackHandler.setComplete(true);
                 jdbcTemplate.query(traverseConfigSchema.getFullQuery().toString(), rowCallbackHandler);
+//                jdbcTemplate.queryForList(traverseConfigSchema.getFullQuery().toString());
             }
         } catch (Exception e) {
             e.printStackTrace();

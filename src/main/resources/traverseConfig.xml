@@ -42,7 +42,7 @@
         </fullQuery>
         <analyzerColumn>JQMS</analyzerColumn>
         <analyzerColumn>BLXX</analyzerColumn>
-        <analyzerColumn specialExpress="{columnName:'BSHLX',columnValue:'004'}/{RYLX:'05'}">ZYAQ</analyzerColumn>
+        <analyzerColumn specialExpress="{BSHLX='004'}/{RYLX:'05'}">ZYAQ</analyzerColumn>
     </data>
 </datas>
 

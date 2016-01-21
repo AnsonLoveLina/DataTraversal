@@ -1,34 +1,22 @@
-package cn.sinobest.core.common.util;
+package cn.sinobest.core.common.init;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.springframework.stereotype.Component;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import java.io.IOException;
 import java.io.InputStream;
 
 /**
  * Created by zhouyi1 on 2016/1/20 0020.
+ * aware的方式比listener更早获得applicatioinContext
  */
-public class SpringContextInit implements ServletContextListener {
-    private static WebApplicationContext applicationContext;
-    //private static ApplicationContext appcContext;
+@Component
+public class SpringContextInit implements ApplicationContextAware  {
+    private static ApplicationContext applicationContext;
 
-    @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        applicationContext = WebApplicationContextUtils.getWebApplicationContext(servletContextEvent.getServletContext());
-        //appcContext = new ClassPathXmlApplicationContext("applicationContext.xml");
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent servletContextEvent) {
-
-    }
 
     public static InputStream getResource(String resourcePath) throws IOException {
         Resource resource = applicationContext.getResource(resourcePath);
@@ -43,6 +31,11 @@ public class SpringContextInit implements ServletContextListener {
     }
     public static ApplicationContext getContext() {
         return applicationContext;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
     }
 }
 

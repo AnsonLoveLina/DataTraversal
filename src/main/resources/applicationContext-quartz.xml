@@ -3,7 +3,7 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
 
-    <bean id="job" class="cn.sinobest.job.TraverseJob">
+    <bean id="job" class="cn.sinobest.job.TraverseJob" init-method="init">
         <property name="callBackHandlerBeanName" value="analyzerCallBackHandler"/>
         <property name="serviceNames">
             <set value-type="java.lang.String">

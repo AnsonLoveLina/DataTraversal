@@ -89,15 +89,13 @@ public class MyDruidOracleLogger extends DruidDataSourceStatLoggerImpl implement
     //把INSERT和CREATE耦合到一起没什么原因，只因为懒
     private String getOracleTableSql() {
         String createSql = "create table " + this.tableName + "(\n";
-        HashSet<String> columnSets = Sets.newHashSet(tableColumn);
-        this.insertSql = "insert into " + this.tableName + "(" + StringUtil.join(columnSets, ",") + ")" + " values(";
-        String insertValue = "getid(null)";
+        HashSet<String> columnSets = Sets.newHashSet();
 //        CharMatcher.
         for (int i = 0; i < this.tableColumn.length; i++) {
             if (i % 2 == 0) {
                 createSql += this.tableColumn[i] + "    ";
                 if (i != 0) {
-                    insertValue += ",:" + this.tableColumn[i].trim().toLowerCase();
+                    columnSets.add(this.tableColumn[i].trim().toLowerCase());
                 }
             } else {
                 createSql += this.tableColumn[i] + ",";
@@ -106,7 +104,8 @@ public class MyDruidOracleLogger extends DruidDataSourceStatLoggerImpl implement
         createSql = createSql.substring(0, createSql.length() - 1);
 //        createSql += (");");
         createSql += (")\n" + this.tableSpace4Oracle);
-        this.insertSql += insertValue + ")";
+        this.insertSql = "insert into " + this.tableName + "(systemid," + StringUtil.join(columnSets, ",") + ")"
+                + " values(getid(null),:"+StringUtil.join(columnSets, ",:")+")";
         return createSql;
     }
 

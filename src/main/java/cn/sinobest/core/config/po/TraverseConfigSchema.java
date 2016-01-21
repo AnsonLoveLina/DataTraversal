@@ -1,19 +1,18 @@
 package cn.sinobest.core.config.po;
 
 import cn.sinobest.core.common.jaxb.XmlObject;
+import cn.sinobest.core.common.util.SqlUtil;
+import org.springframework.jdbc.core.namedparam.ParsedSql;
 
 import javax.xml.bind.annotation.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by zhouyi1 on 2016/1/19 0019.
  */
 @XmlAccessorType(value = XmlAccessType.NONE)
 public class TraverseConfigSchema {
-    private final String[] columnStrs = {"JQMS","ZCXX","BLXX","AJID","ZYAQ","AJBH","AJMC"};
+    private final String[] defaultColumnStrs = {"JQMS","ZCXX","BLXX","AJID","ZYAQ","AJBH","AJMC"};
     @XmlElement(name = "detailQuery",required = true)
     private DetailQuery detailQuery;
     @XmlElement(name = "fullQuery",required = true)
@@ -46,23 +45,67 @@ public class TraverseConfigSchema {
     @XmlAttribute(name = "resultTable")
     private String resultTable;
     @XmlElement(name = "analyzerColumn")
-    private List<AnalyzerColumn> analyzerColumns;
-    private List<String> columns = new ArrayList<String>();
-    private List<String> resultStrColumns;
-    private List<ResultColumn> resultColumns = new ArrayList<ResultColumn>();
-    private Map<String,String> specialExpress = new HashMap<String, String>();
+    private Set<AnalyzerColumn> analyzerColumns = new HashSet<AnalyzerColumn>();
+    private Set<String> columns = new HashSet<String>();
+    private Set<String> resultStrColumns = new HashSet<String>();
+
+    private String insertSql;
+//    private Set<ResultColumn> resultColumns = new HashSet<ResultColumn>();
 
     public TraverseConfigSchema() {
 
     }
 
-    public Map<String, String> getSpecialExpress() {
-        return specialExpress;
+    public boolean isFitted(){
+        return columns.isEmpty();
     }
 
-    public void setSpecialExpress(Map<String, String> specialExpress) {
-        this.specialExpress = specialExpress;
+    public void fit(){
+        Set<String> columnTemps = SqlUtil.processColumns(detailQuery.toString());
+        columnTemps.addAll(SqlUtil.processColumns(fullQuery.toString()));
+        //如果是select*这种获取不了字段，就用默认
+        if (columnTemps.isEmpty()){
+            columnTemps.addAll(Arrays.asList(defaultColumnStrs));
+        }
+
+        this.columns = columnTemps;
+
+        resultStrColumns = columnTemps;
+        if(!analyzerColumns.isEmpty())
+            resultStrColumns.removeAll(analyzerColumns);
+        if(resultStrColumns.contains("SYSTEMID"))
+            resultStrColumns.remove("SYSTEMID");
+
+        this.insertSql = SqlUtil.getInsertSql(resultTable,resultStrColumns);
     }
+
+    public Set<AnalyzerColumn> getAnalyzerColumns() {
+        return analyzerColumns;
+    }
+
+    public void setAnalyzerColumns(Set<AnalyzerColumn> analyzerColumns) {
+        this.analyzerColumns = analyzerColumns;
+    }
+
+    public String getInsertSql() {
+        return insertSql;
+    }
+
+    public Set<String> getColumns() {
+        return columns;
+    }
+
+    public Set<String> getResultStrColumns() {
+        return resultStrColumns;
+    }
+
+//    public Set<ResultColumn> getResultColumns() {
+//        return resultColumns;
+//    }
+//
+//    public void setResultColumns(Set<ResultColumn> resultColumns) {
+//        this.resultColumns = resultColumns;
+//    }
 
     public boolean isConcurrentNeedCheck() {
         return concurrentNeedCheck;
@@ -112,14 +155,6 @@ public class TraverseConfigSchema {
 //        this.fullEndUpdateSql = fullEndUpdateSql;
 //    }
 
-    public List<String> getColumns() {
-        return columns;
-    }
-
-    public List<ResultColumn> getResultColumns() {
-        return resultColumns;
-    }
-
     public String getTimestampComment() {
         return timestampComment;
     }
@@ -134,14 +169,6 @@ public class TraverseConfigSchema {
 
     public void setTimestampKey(String timestampKey) {
         this.timestampKey = timestampKey;
-    }
-
-    public List<AnalyzerColumn> getAnalyzerColumns() {
-        return analyzerColumns;
-    }
-
-    public void setAnalyzerColumns(List<AnalyzerColumn> analyzerColumns) {
-        this.analyzerColumns = analyzerColumns;
     }
 
 //    public int getDetailConcurrentNum() {
