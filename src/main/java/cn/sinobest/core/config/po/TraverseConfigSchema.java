@@ -38,6 +38,7 @@ public class TraverseConfigSchema extends Data {
 
         this.columns.add(Param.BSHID.toString().toLowerCase());
         this.columns.add(Param.BSHLX.toString().toLowerCase());
+        super.setFullQuery(fullQuery);
     }
 
     @Override
@@ -46,6 +47,7 @@ public class TraverseConfigSchema extends Data {
 
         this.columns.add(Param.BSHID.toString().toLowerCase());
         this.columns.add(Param.BSHLX.toString().toLowerCase());
+        super.setDetailQuery(detailQuery);
     }
 
     public ParsedSql getInsertSql() {

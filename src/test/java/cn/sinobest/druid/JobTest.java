@@ -1,9 +1,16 @@
 package cn.sinobest.druid;
 
+import cn.sinobest.core.config.po.Data;
+import cn.sinobest.core.config.po.DetailQuery;
 import cn.sinobest.core.config.po.TraverseConfigSchema;
 import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import jodd.bean.BeanTool;
+import jodd.bean.BeanUtil;
+import jodd.introspector.ClassDescriptor;
+import jodd.introspector.ClassIntrospector;
+import jodd.util.ArraysUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -21,6 +28,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +40,7 @@ import java.util.Set;
 //@ContextConfiguration(locations = {"classpath:applicationContext-test.xml"})
 public class JobTest {
 
-    @Test
+//    @Test
     public void test() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         try {
@@ -49,7 +57,7 @@ public class JobTest {
         }
     }
 
-    @Test
+//    @Test
     public void test1() {
 //        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext.xml");
         Set<String> s = Sets.newHashSet("1", "2", "3");
@@ -78,7 +86,7 @@ public class JobTest {
         }
     }
 
-    @Test
+//    @Test
     public void test2(){
         String sql = "select 1 from dual where 1=:id";
         Map m = Maps.newHashMap();
@@ -92,7 +100,7 @@ public class JobTest {
         }
     }
 
-    @Test
+//    @Test
     public void test3(){
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         DataSource ds = (DataSource) applicationContext.getBean("dataSource");
@@ -115,5 +123,21 @@ public class JobTest {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void test4(){
+        Data data = new Data();
+        DetailQuery dq = new DetailQuery();
+        dq.setDetailQuery("detailQuery");
+        data.setDetailQuery(dq);
+        data.setSchemaName("schemaName");
+
+        TraverseConfigSchema schema = new TraverseConfigSchema();
+//        BeanUtil.setPropertyForced(schema, "detailQuery", dq);
+        BeanTool.copyProperties(data, schema, (String[]) null, true);
+        System.out.println(schema.getSchemaName());
+        System.out.println(schema.getDetailQuery());
+
     }
 }
