@@ -15,7 +15,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -28,7 +31,6 @@ import java.util.Set;
 //@RunWith(SpringJUnit4ClassRunner.class)
 //@ContextConfiguration(locations = {"classpath:applicationContext-test.xml"})
 public class JobTest {
-
 
     @Test
     public void test() {
@@ -87,6 +89,31 @@ public class JobTest {
         Object[] params = NamedParameterUtils.buildValueArray(NamedParameterUtils.parseSqlStatement(sql), new MapSqlParameterSource(m), (List)null);
         for (Object o:params){
             System.out.println("o = " + o);
+        }
+    }
+
+    @Test
+    public void test3(){
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
+        DataSource ds = (DataSource) applicationContext.getBean("dataSource");
+        try {
+            Connection conn = ds.getConnection();
+            PreparedStatement ps = conn.prepareStatement("insert into B_YPGJ_YPKJ_AJBSHGX(systemid,ajmc) values (getid(null),?)");
+            for (int i = 0; i < 99; i++) {
+                ps.setObject(1,"ajmc"+i);
+                ps.addBatch();
+
+                if (i==80){
+                    ps.executeBatch();
+                    conn.commit();
+                }
+            }
+            ps.executeBatch();
+            conn.commit();
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 }

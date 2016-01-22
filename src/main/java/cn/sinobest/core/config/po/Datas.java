@@ -12,15 +12,15 @@ import java.util.Set;
  */
 @XmlRootElement(name = "datas")
 @XmlAccessorType(value = XmlAccessType.NONE)
-public class TraverseConfigSchemas {
+public class Datas {
     @XmlElement(name = "data")
-    private Set<TraverseConfigSchema> data;
+    private Set<Data> data;
 
-    public Set<TraverseConfigSchema> getData() {
+    public Set<Data> getData() {
         return data;
     }
 
-    public void setData(Set<TraverseConfigSchema> data) {
+    public void setData(Set<Data> data) {
         this.data = data;
     }
 }

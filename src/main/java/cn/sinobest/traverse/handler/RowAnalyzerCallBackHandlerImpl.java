@@ -43,10 +43,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
 
     private int concurrentNum = 0;
 
-    private String endUpdateSql;
-
-    //init的时候初始化
-    private ImmutableMap<String, Object> paramMapTemplate = null;
+    private ParsedSql endUpdateSql;
 
     @Override
     public void setComplete(boolean isComplete) {
@@ -64,29 +61,32 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         this.traverseConfigSchema = traverseConfigSchema;
     }
 
-    @PostConstruct
-    public void init() {
-        if (isComplete){
-            concurrentNum = traverseConfigSchema.getFullQuery().getFullConcurrentNum();
-            endUpdateSql = traverseConfigSchema.getFullQuery().getFullEndUpdateSql();
-        }else{
-            concurrentNum = traverseConfigSchema.getDetailQuery().getDetailConcurrentNum();
-            endUpdateSql = traverseConfigSchema.getDetailQuery().getDetailEndUpdateSql();
-        }
+    public void initExecutor(int concurrentNum){
         //目前先采用队列作为缓冲区，提高安全性和吞吐
         BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(15000);
         ExecutorService taskServcie = new ThreadPoolExecutor(concurrentNum, concurrentNum,
                 0L, TimeUnit.MILLISECONDS,
                 queue, blockingPolicy);
         executor.set(taskServcie);
-        if (paramMapTemplate == null){
-            paramMapTemplate = (ImmutableMap<String, Object>) Maps.asMap(traverseConfigSchema.getResultStrColumns(), new Function<String, Object>() {
-                @Override
-                public Object apply(String s) {
-                    return null;
-                }
-            });
+    }
+
+    @PostConstruct
+    public void init() {
+        //spring初始化的情况
+        if (traverseConfigSchema==null)
+            return;
+        if (isComplete) {
+            concurrentNum = traverseConfigSchema.getFullQuery().getFullConcurrentNum();
+            endUpdateSql = traverseConfigSchema.getFullSql();
+        } else {
+            concurrentNum = traverseConfigSchema.getDetailQuery().getDetailConcurrentNum();
+            endUpdateSql = traverseConfigSchema.getDetailSql();
         }
+
+        if (concurrentNum>0){
+            initExecutor(concurrentNum);
+        }
+
     }
 
     RejectedExecutionHandler blockingPolicy = new RejectedExecutionHandler() {
@@ -104,99 +104,54 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     };
     ThreadLocal<ExecutorService> executor = new ThreadLocal<ExecutorService>();
 
-    private class Task implements Runnable{
+    private class Task implements Runnable {
 
-        private List<HashMap<String,Object>> paramMaps;
+        private List<HashMap<String, Object>> paramMaps;
 
-        public Task(List<HashMap<String,Object>> paramMaps) {
+        public Task(List<HashMap<String, Object>> paramMaps) {
             this.paramMaps = paramMaps;
         }
 
         @Override
         public void run() {
-            processBiz(traverseConfigSchema.getInsertSql(), endUpdateSql, paramMaps);
+            adapter.processBiz(traverseConfigSchema.getInsertSql(), endUpdateSql, paramMaps);
         }
     }
+
+    @Autowired
+    private CallBackAdapter adapter;
 
     @Override
     public void processRow(ResultSet resultSet) throws SQLException {
-        List<HashMap<String,Object>> paramMaps = getAnalyzedMapWithSchema(resultSet);
-        if (paramMaps.isEmpty()){
-            logger.error("schema："+traverseConfigSchema.getSchemaName()+"字段解析错误!");
+        //没把分析字段并且获取结果放到JUC环境中，主要是因为这个方法大部分都是纯CPU计算的、没有太多的IO和非CPU等待，放入到JUC后不一定能提高多大效率
+       /* List<HashMap<String, Object>> paramMaps = getAnalyzedMapWithSchema(resultSet);
+        if (paramMaps.isEmpty()) {
+            logger.error("schema：" + traverseConfigSchema.getSchemaName() + "字段解析错误!");
             return;
         }
         if (concurrentNum == 0) {
-            processBiz(traverseConfigSchema.getInsertSql(), endUpdateSql, paramMaps);
+            adapter.processBiz(traverseConfigSchema.getInsertSql(), endUpdateSql, paramMaps);
         } else if (concurrentNum > 0) {
             executor.get().execute(new Task(paramMaps));
-        }
+        }*/
+        System.out.println(resultSet.getObject("ajmc"));
     }
 
-    @Autowired
-    private StringAnalyzer analyzer;
-
-    private List<HashMap<String,Object>> getAnalyzedMapWithSchema(ResultSet resultSet) throws SQLException {
-        HashMap<String,Object> dbMap = new HashMap<String,Object>();
+    private List<HashMap<String, Object>> getAnalyzedMapWithSchema(ResultSet resultSet) throws SQLException {
+        Preconditions.checkNotNull(resultSet);
+        HashMap<String, Object> dbMap = new HashMap<String, Object>();
         Set<String> columns = traverseConfigSchema.getColumns();
-        for (String column:columns){
+        for (String column : columns) {
             Object value = resultSet.getObject(column);
-            dbMap.put(column,value);
+            dbMap.put(column, value);
         }
 
-        if (dbMap.isEmpty()){
-            logger.error("schema："+traverseConfigSchema.getSchemaName()+"xml解析错误!");
+        if (dbMap.isEmpty()) {
+            logger.error("schema：" + traverseConfigSchema.getSchemaName() + "xml解析错误!");
             return new ArrayList();
         }
-        List<HashMap<String,Object>> paramMap = analyzer.analyze(dbMap,traverseConfigSchema.getAnalyzerColumns());
+        List<HashMap<String, Object>> paramMap = adapter.analyze(dbMap, traverseConfigSchema.getAnalyzerColumns());
         return paramMap;
-    }
-
-    //暂时先不加对于schemaName的锁
-    private void processBiz(String insertSql,String endUpdateSql,List<HashMap<String,Object>> paramMap) {
-        try {
-            String insertSqlNew = NamedParameterUtils.substituteNamedParameters(getParsedSql(insertSql), new MapSqlParameterSource(paramMapTemplate));
-            processResult(insertSqlNew, paramMap);
-            if (endUpdateSql!=null){
-                String endUpdateSqlNew = NamedParameterUtils.substituteNamedParameters(getParsedSql(endUpdateSql), new MapSqlParameterSource(paramMapTemplate));
-                processResult(endUpdateSqlNew, paramMap);
-            }
-        } catch (Exception e) {
-            logger.error("结果语句preparedStatement！",e);
-        }
-
-    }
-
-    @Autowired
-    private PreparedStatementCommiter commiter;
-
-    private void processResult(String processResultSql, List<HashMap<String,Object>> paramMaps) throws Exception {
-        PreparedStatement ps = commiter.getPrepareStatement(processResultSql);
-
-        for (HashMap<String,Object> paramMap:paramMaps){
-            Object[] params = NamedParameterUtils.buildValueArray(getParsedSql(processResultSql), new MapSqlParameterSource(paramMap), (List) null);
-
-            for (int i = 0; i < params.length; i++) {
-                ps.setObject(i + 1, params[i]);
-            }
-
-            ps.addBatch();
-            commiter.addBatch(processResultSql);
-        }
-    }
-
-    //初始化一个10的缓存
-    private final Map<String, ParsedSql> parsedSqlCache = new HashMap<String, ParsedSql>(10);
-
-    private ParsedSql getParsedSql(String sql) {
-//        synchronized (this.parsedSqlCache) {
-        ParsedSql parsedSql = (ParsedSql) this.parsedSqlCache.get(sql);
-        if (parsedSql == null) {
-            parsedSql = NamedParameterUtils.parseSqlStatement(sql);
-            this.parsedSqlCache.put(sql, parsedSql);
-        }
-
-        return parsedSql;
-//        }
     }
 
 }

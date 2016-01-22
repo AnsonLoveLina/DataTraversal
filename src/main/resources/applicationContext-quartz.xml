@@ -12,7 +12,14 @@
         </property>
     </bean>
 
+    <bean id="commiter" class="cn.sinobest.traverse.io.PreparedStatementCommiter" factory-method="getInstance">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
     <task:scheduled-tasks>
         <task:scheduled ref="job" method="execute" fixed-delay="6000"/>
+        <task:scheduled ref="commiter" method="executeAndCommit" fixed-delay="3000"/>
     </task:scheduled-tasks>
+
+
 </beans>

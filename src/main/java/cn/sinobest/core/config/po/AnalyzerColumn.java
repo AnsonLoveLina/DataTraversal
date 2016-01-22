@@ -22,7 +22,7 @@ public class AnalyzerColumn {
     }
 
     public void setAnalyzerColumn(String analyzerColumn) {
-        this.analyzerColumn = analyzerColumn;
+        this.analyzerColumn = analyzerColumn.toLowerCase();
     }
 
     public String getSpecialExpress() {
