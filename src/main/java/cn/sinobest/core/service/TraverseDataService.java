@@ -78,7 +78,7 @@ public class TraverseDataService {
                     timeManager.overTimestamp();
                 }
             }else{
-                timeManager.insertTimestamp();
+//                timeManager.insertTimestamp();
                 rowCallbackHandler.setComplete(true);
                 jdbcTemplate.query(traverseConfigSchema.getFullQuery().toString(), rowCallbackHandler);
 //                jdbcTemplate.queryForList(traverseConfigSchema.getFullQuery().toString());

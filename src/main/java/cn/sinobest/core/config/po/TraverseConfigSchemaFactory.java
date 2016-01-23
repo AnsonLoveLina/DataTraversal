@@ -4,6 +4,7 @@ import cn.sinobest.core.common.init.WebResourceLoaderAware;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import jodd.bean.BeanTool;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,7 +40,7 @@ public class TraverseConfigSchemaFactory    {
 
             for (Data data:datas.getData()){
                 TraverseConfigSchema schema = new TraverseConfigSchema();
-                PropertyUtils.copyProperties(schema, data);
+                BeanTool.copy(data, schema);
                 schemaSet.add(schema);
             }
 

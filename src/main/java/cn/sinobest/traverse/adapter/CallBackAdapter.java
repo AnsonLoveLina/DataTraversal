@@ -30,9 +30,6 @@ public class CallBackAdapter {
     private static final Log logger = LogFactory.getLog(CallBackAdapter.class);
 
     @Autowired
-    private PreparedStatementCommiter commiter;
-
-    @Autowired
     private StringAnalyzer analyzer;
 
     /**
@@ -45,7 +42,8 @@ public class CallBackAdapter {
         HashMap<String,Object> noAnalyzerDbMap = Maps.newHashMap(Maps.<String, Object>filterKeys(dbMap, new Predicate<String>() {
             @Override
             public boolean apply(String s) {
-                return analyzerColumns.contains(s.toLowerCase());
+                boolean isAnalyzer = analyzerColumns.contains(new AnalyzerColumn(s));
+                return !isAnalyzer;
             }
         }));
         List<HashMap<String, Object>> paramMaps = new ArrayList<>();
@@ -59,30 +57,19 @@ public class CallBackAdapter {
                     columnStr = SqlUtil.ClobToString((Clob) columnValue);
                 }
                 HashMap<String,Object> analyzerResults = analyzer.analyze(columnStr, analyzerColumn);
-                noAnalyzerDbMap.putAll(analyzerResults);
-                paramMaps.add(noAnalyzerDbMap);
+                if (!analyzerResults.isEmpty()){
+                    noAnalyzerDbMap.putAll(analyzerResults);
+                    paramMaps.add(noAnalyzerDbMap);
+                }
 //                Maps.
             }
         }
         return paramMaps;
     }
 
-    //暂时先不加对于schemaName的锁
-    public void processBiz(ParsedSql insertSql,ParsedSql endUpdateSql,List<HashMap<String,Object>> paramMap) {
-        Preconditions.checkNotNull(insertSql);
-        try {
-            processResult(insertSql, paramMap);
-            if (endUpdateSql!=null){
-                processResult(endUpdateSql, paramMap);
-            }
-        } catch (Exception e) {
-            logger.error("结果语句preparedStatement！",e);
-        }
-
-    }
-
-    private void processResult(ParsedSql processResultSql, List<HashMap<String,Object>> paramMaps) throws Exception {
-        PreparedStatement ps = commiter.getPrepareStatement(processResultSql);
+    public void processResult(ParsedSql processResultSql, List<HashMap<String, Object>> paramMaps, PreparedStatementCommiter commiter) throws Exception {
+        PreparedStatement ps = commiter.getPreparedStatement();
+//            String insertSqlNew = NamedParameterUtils.substituteNamedParameters(SqlUtil.getParsedSql(insertSqlSource), new MapSqlParameterSource(paramMapTemplate));
 
         for (HashMap<String,Object> paramMap:paramMaps){
             Object[] params = NamedParameterUtils.buildValueArray(processResultSql, new MapSqlParameterSource(paramMap), (List) null);

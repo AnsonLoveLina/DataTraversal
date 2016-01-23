@@ -57,6 +57,8 @@ public class SqlUtil {
 
     public static ParsedSql getParsedSql(String sql) {
 //        synchronized (this.parsedSqlCache) {
+        if (StringUtil.isBlank(sql))
+            return null;
         ParsedSql parsedSql = (ParsedSql) parsedSqlCache.get(sql);
         if (parsedSql == null) {
             parsedSql = NamedParameterUtils.parseSqlStatement(sql);
@@ -67,11 +69,16 @@ public class SqlUtil {
 //        }
     }
 
-    public static ImmutableMap<String, Object> getParamTemplate(Set<String> columns) throws Exception {
+    public static String getSubstituteNamedParameters(ParsedSql sql){
+        return NamedParameterUtils.substituteNamedParameters(sql,null);
+    }
+
+    @Deprecated
+    public static Map<String, Object> getParamTemplate(Set<String> columns) throws Exception {
         if (columns.isEmpty()){
             throw new Exception("结果字段集合为空！适配器初始化出错！");
         }
-        ImmutableMap<String, Object> paramMapTemplate = (ImmutableMap<String, Object>) Maps.asMap(columns, new Function<String, Object>() {
+        Map<String, Object> paramMapTemplate = Maps.asMap(columns, new Function<String, Object>() {
             @Override
             public Object apply(String s) {
                 return null;
@@ -81,6 +88,7 @@ public class SqlUtil {
     }
 
     public static String getInsertSql(String resultTable,Set<String> resultColumns){
+        resultColumns.remove("systemid");
         StringBuilder insertSql = new StringBuilder("insert into ");
         insertSql.append(resultTable);
         insertSql.append("(SYSTEMID,CREATEDTIME,LASTUPDATEDTIME,");

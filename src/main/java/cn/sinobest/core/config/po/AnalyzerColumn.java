@@ -18,11 +18,18 @@ public class AnalyzerColumn {
 
     @Override
     public String toString() {
-        return analyzerColumn.toString();
+        return analyzerColumn.toLowerCase().toString();
+    }
+
+    public AnalyzerColumn(String analyzerColumn) {
+        this.analyzerColumn = analyzerColumn;
+    }
+
+    public AnalyzerColumn() {
     }
 
     public void setAnalyzerColumn(String analyzerColumn) {
-        this.analyzerColumn = analyzerColumn.toLowerCase();
+        this.analyzerColumn = analyzerColumn;
     }
 
     public String getSpecialExpress() {
@@ -35,11 +42,11 @@ public class AnalyzerColumn {
 
     @Override
     public int hashCode() {
-        return analyzerColumn.hashCode();
+        return toString().hashCode();
     }
 
     @Override
     public boolean equals(Object obj) {
-        return toString().equals(obj);
+        return toString().equals(obj.toString());
     }
 }
