@@ -1,11 +1,13 @@
-package cn.sinobest.core.config.po;
+package cn.sinobest.core.config.schema;
 
 import cn.sinobest.core.common.init.WebResourceLoaderAware;
+import cn.sinobest.core.config.po.Data;
+import cn.sinobest.core.config.po.Datas;
+import cn.sinobest.core.config.po.TraverseConfigSchema;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import jodd.bean.BeanTool;
-import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
@@ -14,15 +16,16 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by zhouyi1 on 2016/1/19 0019.
+ * Created by zy-xx on 16/1/24.
  */
-@Deprecated
-public class TraverseConfigSchemaFactory    {
-    private static final Log logger = LogFactory.getLog(TraverseConfigSchemaFactory.class);
-    private static ImmutableMap<String, TraverseConfigSchema> schemas = ImmutableMap.of();
+public class SchemaerFactory {
+
+    private static final Log logger = LogFactory.getLog(SchemaerFactory.class);
+    private static Map<String, Schemaer> schemas = Maps.newHashMap();
 
     static {
 
@@ -37,27 +40,17 @@ public class TraverseConfigSchemaFactory    {
             Datas datas = (Datas) jaxbUnmarshaller.unmarshal(is);
             logger.trace("成功装载资源！");
 
-            Set<TraverseConfigSchema> schemaSet = new HashSet<TraverseConfigSchema>();
-
             for (Data data:datas.getData()){
-                TraverseConfigSchema schema = new TraverseConfigSchema();
-                BeanTool.copy(data, schema);
-                schemaSet.add(schema);
+                Schemaer schemaer = new Schemaer(data);
+                schemas.put(data.getSchemaName(),schemaer);
             }
-
-            schemas = Maps.uniqueIndex(schemaSet.iterator(), new Function<TraverseConfigSchema, String>() {
-                @Override
-                public String apply(TraverseConfigSchema schema) {
-                    return schema.getSchemaName();
-                }
-            });
         }catch (Exception e){
             logger.error(e.getMessage(),e);
         }
     }
 
-    public static TraverseConfigSchema getSchema(String serverName) {
-        TraverseConfigSchema schema = schemas.get(serverName);
-        return schema;
+    public static Schemaer getSchema(String serverName) {
+        Schemaer schemaer = schemas.get(serverName);
+        return schemaer;
     }
 }

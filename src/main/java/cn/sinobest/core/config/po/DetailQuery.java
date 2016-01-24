@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.*;
  * Created by zhouyi1 on 2016/1/20 0020.
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class DetailQuery {
+public class DetailQuery implements ITraverseQuery {
     @XmlValue
     private String detailQuery;
     @XmlAttribute(name = "concurrentNum")
@@ -17,6 +17,31 @@ public class DetailQuery {
     @Override
     public String toString() {
         return detailQuery.toString();
+    }
+
+    @Override
+    public void setTraverseQuery(String detailQuery) {
+        this.detailQuery = detailQuery;
+    }
+
+    @Override
+    public int getConcurrentNum() {
+        return detailConcurrentNum;
+    }
+
+    @Override
+    public void setConcurrentNum(int detailConcurrentNum) {
+        this.detailConcurrentNum = detailConcurrentNum;
+    }
+
+    @Override
+    public String getEndUpdateSql() {
+        return detailEndUpdateSql;
+    }
+
+    @Override
+    public void setEndUpdateSql(String detailEndUpdateSql) {
+        this.detailEndUpdateSql = detailEndUpdateSql;
     }
 
     public void setDetailQuery(String detailQuery) {

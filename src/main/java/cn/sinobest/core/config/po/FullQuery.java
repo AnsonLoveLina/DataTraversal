@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.*;
  * Created by zhouyi1 on 2016/1/20 0020.
  */
 @XmlAccessorType(XmlAccessType.NONE)
-public class FullQuery {
+public class FullQuery implements ITraverseQuery {
     @XmlValue
     private String fullQuery;
     @XmlAttribute(name = "concurrentNum")
@@ -17,6 +17,31 @@ public class FullQuery {
     @Override
     public String toString() {
         return fullQuery.toString();
+    }
+
+    @Override
+    public void setTraverseQuery(String fullQuery) {
+        this.fullQuery = fullQuery;
+    }
+
+    @Override
+    public int getConcurrentNum() {
+        return fullConcurrentNum;
+    }
+
+    @Override
+    public void setConcurrentNum(int fullConcurrentNum) {
+        this.fullConcurrentNum = fullConcurrentNum;
+    }
+
+    @Override
+    public String getEndUpdateSql() {
+        return fullEndUpdateSql;
+    }
+
+    @Override
+    public void setEndUpdateSql(String fullEndUpdateSql) {
+        this.fullEndUpdateSql = fullEndUpdateSql;
     }
 
     public void setFullQuery(String fullQuery) {

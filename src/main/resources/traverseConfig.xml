@@ -8,7 +8,7 @@
     剩下的将直接存入到结果表中
     -->
     <!--01受害人，02报案人，03受害报案人，04证人，05嫌疑人，99其他-->
-    <data schemaName="B_ASJ_ZAJ_RY" concurrentNeedCheck="true" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（人员）" timestampKey="AJJQ.ZYAQRY" regexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX,decode(CODE,'001','cn.com.hnisi.service.analyzer.XZExecBsh','') as ANALYZERCLASS from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
+    <data schemaName="B_ASJ_ZAJ_RY" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（人员）" timestampKey="AJJQ.ZYAQRY" regexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX,decode(CODE,'001','cn.com.hnisi.service.analyzer.XZExecBsh','') as ANALYZERCLASS from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
         <detailQuery endUpdateSql="" >
             select /*+rule*/'ry' as zymc,x.rylx as rylx,r.ajbh as ajbh,(select ajmc from b_asj_aj z where z.ajbh = r.ajbh) as ajmc,(select systemid from b_asj_aj z where z.ajbh = r.ajbh) as ajid,r.systemid as systemid,x.zjhm as zjhm,x.LXDH as lxfs from b_asj_baszqt x,b_asj_rysaqk r where r.rybh = x.systemid and x.LASTUPDATEDTIME>=to_date(?,'YYYY-MM-DD HH24:MI:SS') and x.LASTUPDATEDTIME is not null
         </detailQuery>
@@ -17,8 +17,10 @@
         </fullQuery>
         <analyzerColumn>ZJHM</analyzerColumn>
         <analyzerColumn>LXFS</analyzerColumn>
+        <analyzerResultColumn>BSHID</analyzerResultColumn>
+        <analyzerResultColumn>BSHLX</analyzerResultColumn>
     </data>
-    <data schemaName="B_ASJ_ZAJ_XYR" concurrentNeedCheck="true" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（嫌疑人）" timestampKey="AJJQ.ZYAQXYR" regexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
+    <data schemaName="B_ASJ_ZAJ_XYR" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（嫌疑人）" timestampKey="AJJQ.ZYAQXYR" regexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
         <detailQuery endUpdateSql="" >
             select /*+rule*/'xyr' as zymc,'05' rylx,r.ajbh as ajbh,(select ajmc from b_asj_aj z where z.ajbh = r.ajbh) as ajmc,(select systemid from b_asj_aj z where z.ajbh = r.ajbh) as ajid,r.systemid as systemid,x.zjhm as zjhm,x.wfqk as wfqk from b_asj_xyrdj x,b_asj_rysaqk r where r.rybh = x.systemid and x.LASTUPDATEDTIME>=to_date(?,'YYYY-MM-DD HH24:MI:SS') and x.LASTUPDATEDTIME is not null
         </detailQuery>
@@ -27,8 +29,10 @@
         </fullQuery>
         <analyzerColumn>ZJHM</analyzerColumn>
         <analyzerColumn>WFQK</analyzerColumn>
+        <analyzerResultColumn>BSHID</analyzerResultColumn>
+        <analyzerResultColumn>BSHLX</analyzerResultColumn>
     </data>
-    <data schemaName="B_ASJ_ZAJ_WP" concurrentNeedCheck="true" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（物品）" timestampKey="AJJQ.ZYAQWP" regexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
+    <data schemaName="B_ASJ_ZAJ_WP" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（物品）" timestampKey="AJJQ.ZYAQWP" regexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
         <detailQuery endUpdateSql="" >
             select 'wp' as zymc,decode(w.wpxz,'02','05','03','05','01','01','99') as rylx,systemid,wpgg,wptz,tzms,(select z.systemid from b_asj_aj z where z.ajbh = w.ajbh and rownum=1) as ajid,ajbh,(select z.ajmc from  b_asj_aj z where z.ajbh = w.ajbh and rownum=1) as ajmc from B_ASJ_WP w where w.LASTUPDATEDTIME>=to_date(?,'YYYY-MM-DD HH24:MI:SS') and LASTUPDATEDTIME is not null
         </detailQuery>
@@ -38,8 +42,10 @@
         <analyzerColumn>WPGG</analyzerColumn>
         <analyzerColumn>WPTZ</analyzerColumn>
         <analyzerColumn>TZMS</analyzerColumn>
+        <analyzerResultColumn>BSHID</analyzerResultColumn>
+        <analyzerResultColumn>BSHLX</analyzerResultColumn>
     </data>
-    <data schemaName="B_ASJ_ZAJ_TEMP" concurrentNeedCheck="true" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（新）" timestampKey="AJJQ.ZYAQNEW" regexSql="select GZ,CODE,LX,'' as ANALYZERCLASS from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX,decode(CODE,'001','cn.com.hnisi.service.analyzer.XZExecBsh','') as ANALYZERCLASS from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
+    <data schemaName="B_ASJ_ZAJ_TEMP" resultTable="B_YPGJ_YPKJ_AJBSHGX" timestampComment="主要案情标识号分词时间戳（新）" timestampKey="AJJQ.ZYAQNEW" regexSql="select GZ,CODE,LX,'' as ANALYZERCLASS from b_ypgj_bshzz_wybshgl where lx not in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code" noNumRegexSql="select GZ,CODE,LX,decode(CODE,'001','cn.com.hnisi.service.analyzer.XZExecBsh','') as ANALYZERCLASS from b_ypgj_bshzz_wybshgl where lx in ('车牌号','身份证') and deleteflag != '1' and state='1' order by code">
         <detailQuery endUpdateSql="" >
             select 'zaj' as zymc,(select RESERVATION07 from b_asj_jq j where j.ajbh = t.ajbh and rownum=1) jqms,(select body from b_asj_bl b where b.ajbh = t.ajbh and rownum=1) blxx,systemid as ajid,zyaq,ajbh,ajmc,'99' rylx from B_ASJ_AJ t where t.ajbh is not null and t.LASTUPDATEDTIME>=to_date(?,'YYYY-MM-DD HH24:MI:SS') and LASTUPDATEDTIME is not null
         </detailQuery>
@@ -49,6 +55,8 @@
         <analyzerColumn>JQMS</analyzerColumn>
         <analyzerColumn>BLXX</analyzerColumn>
         <analyzerColumn specialExpress="{BSHLX='004'}/{RYLX:'05'}">ZYAQ</analyzerColumn>
+        <analyzerResultColumn>BSHID</analyzerResultColumn>
+        <analyzerResultColumn>BSHLX</analyzerResultColumn>
     </data>
 </datas>
 

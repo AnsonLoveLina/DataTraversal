@@ -3,14 +3,18 @@ package cn.sinobest.traverse.handler;
 import cn.sinobest.core.common.param.Param;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.po.TraverseConfigSchema;
+import cn.sinobest.core.config.schema.Schemaer;
+import cn.sinobest.core.config.schema.SqlSchemaer;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
 import cn.sinobest.traverse.adapter.CallBackAdapter;
+import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.analyzer.StringAnalyzer;
 import cn.sinobest.traverse.io.PreparedStatementCommiter;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.sun.xml.internal.ws.server.sei.SEIInvokerTube;
 import jodd.util.CollectionUtil;
 import org.apache.commons.collections.SetUtils;
 import org.apache.commons.logging.Log;
@@ -39,13 +43,13 @@ import java.util.concurrent.*;
 public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandler {
     private static final Log logger = LogFactory.getLog(RowAnalyzerCallBackHandlerImpl.class);
 
-    private TraverseConfigSchema traverseConfigSchema;
+    private Schemaer schemaer;
+
+    private SqlSchemaer sqlSchemaer;
+
+    private int concurrentNum;
 
     private boolean isComplete = false;
-
-    private int concurrentNum = 0;
-
-    private ParsedSql endUpdateSql;
 
     @Override
     public void setComplete(boolean isComplete) {
@@ -58,9 +62,9 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     public RowAnalyzerCallBackHandlerImpl() {
     }
 
-    public RowAnalyzerCallBackHandlerImpl(TraverseConfigSchema traverseConfigSchema) {
-        Preconditions.checkNotNull(traverseConfigSchema);
-        this.traverseConfigSchema = traverseConfigSchema;
+    public RowAnalyzerCallBackHandlerImpl(Schemaer schemaer) {
+        Preconditions.checkNotNull(schemaer);
+        this.schemaer = schemaer;
     }
 
     public void initExecutor(int concurrentNum){
@@ -75,16 +79,15 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     @PostConstruct
     public void init() {
         //spring初始化的情况
-        if (traverseConfigSchema==null)
+        if (schemaer==null)
             return;
         if (isComplete) {
-            concurrentNum = traverseConfigSchema.getFullQuery().getFullConcurrentNum();
-            endUpdateSql = traverseConfigSchema.getFullUpdateSql();
+            sqlSchemaer = schemaer.getFullSchemaer();
         } else {
-            concurrentNum = traverseConfigSchema.getDetailQuery().getDetailConcurrentNum();
-            endUpdateSql = traverseConfigSchema.getDetailUpdateSql();
+            sqlSchemaer = schemaer.getDetailSchemaer();
         }
 
+        concurrentNum = sqlSchemaer.getTraverseQuery().getConcurrentNum();
         if (concurrentNum>0){
             initExecutor(concurrentNum);
         }
@@ -108,29 +111,29 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
 
     private class Task implements Runnable {
 
-        private List<HashMap<String, Object>> paramMaps;
+        private HashMap<String, Object> rowMaps;
 
-        public Task(List<HashMap<String, Object>> paramMaps) {
-            this.paramMaps = paramMaps;
+        public Task(HashMap<String, Object> rowMaps) {
+            this.rowMaps = rowMaps;
         }
 
         @Override
         public void run() {
-            processBiz(traverseConfigSchema.getInsertSql(), endUpdateSql, paramMaps);
+            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), rowMaps);
         }
     }
 
-    private void processBiz(ParsedSql insertSql,ParsedSql endUpdateSql,List<HashMap<String,Object>> paramMap) {
+    private void processBiz(ParsedSql insertSql,ParsedSql endUpdateSql,HashMap<String,Object> paramMap) {
         Preconditions.checkNotNull(insertSql);
-        PreparedStatementCommiter commiter = null;
-        try {
-            adapter.processResult(insertSql, paramMap,commiter);
-            if (endUpdateSql!=null){
-                adapter.processResult(endUpdateSql, paramMap,commiter);
-            }
-        } catch (Exception e) {
-            logger.error("结果语句preparedStatement！",e);
-        }
+//        PreparedStatementCommiter commiter = null;
+//        try {
+//            adapter.processResult(insertSql, paramMap,commiter);
+//            if (endUpdateSql!=null){
+//                adapter.processResult(endUpdateSql, paramMap,commiter);
+//            }
+//        } catch (Exception e) {
+//            logger.error("结果语句preparedStatement！",e);
+//        }
 
     }
 
@@ -140,37 +143,38 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     @Override
     public void processRow(ResultSet resultSet) throws SQLException {
         //没把分析字段并且获取结果放到JUC环境中，主要是因为这个方法大部分都是纯CPU计算的、没有太多的IO和非CPU等待，放入到JUC后不一定能提高多大效率
-        List<HashMap<String, Object>> paramMaps = getAnalyzedMapWithSchema(resultSet);
-        if (paramMaps.isEmpty()) {
+        HashMap<String, Object> rowMaps = getRowMap(resultSet);
+        if (rowMaps.isEmpty()) {
             logger.trace("该条数据没有分析出任何有效数据!");
             return;
         }
         if (concurrentNum == 0) {
-            processBiz(traverseConfigSchema.getInsertSql(), endUpdateSql, paramMaps);
+            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), rowMaps);
         } else if (concurrentNum > 0) {
-            executor.get().execute(new Task(paramMaps));
+            executor.get().execute(new Task(rowMaps));
         }
     }
 
-    private List<HashMap<String, Object>> getAnalyzedMapWithSchema(ResultSet resultSet) throws SQLException{
+    private HashMap<String,Object> getRowMap(ResultSet resultSet) throws SQLException{
         Preconditions.checkNotNull(resultSet);
-        HashMap<String, Object> dbMap = new HashMap<String, Object>();
-        Set<String> columns = traverseConfigSchema.getColumns();
-        Set<AnalyzerColumn> analyzerColumns = traverseConfigSchema.getAnalyzerColumns();
-        for (String column : columns) {
-            Object value = null;
-            if (column!=null && !column.equals(Param.BSHID.toString().toLowerCase()) && !column.equals(Param.BSHLX.toString().toLowerCase())){
-                value = resultSet.getObject(column);
+        HashMap<String, Object> rowMap = new HashMap<String, Object>();
+        Set<AnalyzerColumn> analyzerColumns = sqlSchemaer.getAnalyzerColumns();
+        Set<String> columns = sqlSchemaer.getColumns();
+        Set<String> traverseColumns = sqlSchemaer.getTraverseColumns();
+        int count = 0;
+        for (String columnName : columns){
+            Object columnValue = null;
+            if (traverseColumns.contains(columnName)){
+                columnValue = resultSet.getObject(columnName);
+                if (columnValue!=null && analyzerColumns.contains(new AnalyzerColumn(columnName))){
+                    count++;
+                }
             }
-            dbMap.put(column, value);
+            rowMap.put(columnName,columnValue);
         }
 
-        if (dbMap.isEmpty()) {
-            logger.error("schema：" + traverseConfigSchema.getSchemaName() + "xml解析错误!");
-            return new ArrayList();
-        }
-        List<HashMap<String, Object>> paramMap = adapter.analyze(dbMap, analyzerColumns);
-        return paramMap;
+        return analyzerColumns.size()>count?rowMap:new HashMap<String, Object>();
     }
+
 
 }

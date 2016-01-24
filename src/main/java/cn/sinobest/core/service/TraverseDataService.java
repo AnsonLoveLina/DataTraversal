@@ -3,6 +3,7 @@ package cn.sinobest.core.service;
 import cn.sinobest.core.TimeManager;
 import cn.sinobest.core.config.po.TraverseConfigSchema;
 import cn.sinobest.core.config.po.TraverseConfigSchemaFactory;
+import cn.sinobest.core.config.schema.Schemaer;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
 import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
 import com.google.common.base.Preconditions;
@@ -38,7 +39,7 @@ public class TraverseDataService {
     @Resource(name = "jdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
-    protected TraverseConfigSchema traverseConfigSchema;
+    protected Schemaer schemaer;
 
     @Autowired
     private TimeManager timeManager;
@@ -51,19 +52,19 @@ public class TraverseDataService {
     public TraverseDataService() {
     }
 
-    public TraverseDataService(TraverseConfigSchema traverseConfigSchema,IRowAnalyzerCallBackHandler rowCallbackHandler) {
-        Preconditions.checkNotNull(traverseConfigSchema);
+    public TraverseDataService(Schemaer schemaer,IRowAnalyzerCallBackHandler rowCallbackHandler) {
+        Preconditions.checkNotNull(schemaer);
         Preconditions.checkNotNull(rowCallbackHandler);
-        this.traverseConfigSchema = traverseConfigSchema;
+        this.schemaer = schemaer;
         this.rowCallbackHandler = rowCallbackHandler;
-        if(traverseConfigSchema==null)
-            logger.error(traverseConfigSchema+"in traverseConfig didn't exists!");
+        if(schemaer==null)
+            logger.error(schemaer.getFullSchemaer().toString()+"in traverseConfig didn't exists!");
 //        initRegex();
     }
 
     @PostConstruct
     public void init(){
-        timeManager.init(traverseConfigSchema.getTimestampComment(), traverseConfigSchema.getTimestampKey());
+        timeManager.init(schemaer.getFullSchemaer().getTimestampComment(), schemaer.getFullSchemaer().getTimestampKey());
     }
 
     public void execute(){
@@ -73,14 +74,14 @@ public class TraverseDataService {
                 timeManager.updateTimestamp(lastTime);
                 try{
                     rowCallbackHandler.setComplete(false);
-                    jdbcTemplate.query(traverseConfigSchema.getDetailQuery().toString(), new Object[]{lastTime}, rowCallbackHandler);
+                    jdbcTemplate.query(schemaer.getDetailSchemaer().getTraverseQuery().toString(), new Object[]{lastTime}, rowCallbackHandler);
                 }finally {
                     timeManager.overTimestamp();
                 }
             }else{
 //                timeManager.insertTimestamp();
                 rowCallbackHandler.setComplete(true);
-                jdbcTemplate.query(traverseConfigSchema.getFullQuery().toString(), rowCallbackHandler);
+                jdbcTemplate.query(schemaer.getFullSchemaer().getTraverseQuery().toString(), rowCallbackHandler);
 //                jdbcTemplate.queryForList(traverseConfigSchema.getFullQuery().toString());
             }
         } catch (Exception e) {

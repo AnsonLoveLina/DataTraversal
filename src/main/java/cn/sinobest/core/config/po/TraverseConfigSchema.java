@@ -23,6 +23,7 @@ import java.util.*;
  * Created by zhouyi1 on 2016/1/19 0019.
  * 针对schema的这些扩展字段，扩展adapter和扩展字段以及adapter的初始化如果有空需要用一个proxy进行封装
  */
+@Deprecated
 public class TraverseConfigSchema extends Data {
     private static final Log logger = LogFactory.getLog(TraverseConfigSchema.class);
     private Set<String> columns = new HashSet<String>();
@@ -69,8 +70,8 @@ public class TraverseConfigSchema extends Data {
     public ParsedSql getInsertSql() {
         if (insertSql == null && !getColumns().isEmpty()){
             Set<String> resultStrColumns = Sets.newHashSet(getColumns());
-            if(!analyzerColumns.isEmpty()){
-                resultStrColumns.removeAll(analyzerColumns);
+            if(!getAnalyzerColumns().isEmpty()){
+                resultStrColumns.removeAll(getAnalyzerColumns());
             }
             resultStrColumns.remove("SYSTEMID");
 //
@@ -82,7 +83,7 @@ public class TraverseConfigSchema extends Data {
 //                logger.error("结果字段集合为空！适配器初始化出错！",e);
 //            }
 
-            String insertSqlSource = SqlUtil.getInsertSql(resultTable,resultStrColumns);
+            String insertSqlSource = SqlUtil.getInsertSql(getResultTable(),resultStrColumns);
 //            String insertSqlNew = NamedParameterUtils.substituteNamedParameters(SqlUtil.getParsedSql(insertSqlSource), new MapSqlParameterSource(paramMapTemplate));
             this.insertSql = SqlUtil.getParsedSql(insertSqlSource);
         }

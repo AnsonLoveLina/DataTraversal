@@ -3,6 +3,7 @@ package cn.sinobest.core.config.po;
 import cn.sinobest.core.common.param.Param;
 import cn.sinobest.core.common.util.SqlUtil;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -22,25 +23,25 @@ import java.util.*;
 public class Data {
     private static final Log logger = LogFactory.getLog(Data.class);
     @XmlElement(name = "detailQuery",required = true)
-    protected DetailQuery detailQuery;
+    private DetailQuery detailQuery;
     @XmlElement(name = "fullQuery",required = true)
-    protected FullQuery fullQuery;
+    private FullQuery fullQuery;
     @XmlAttribute(name = "schemaName",required = true)
-    protected String schemaName;
+    private String schemaName;
     @XmlAttribute(name = "timestampComment",required = true)
-    protected String timestampComment;
+    private String timestampComment;
     @XmlAttribute(name = "timestampKey",required = true)
-    protected String timestampKey;
-    @XmlAttribute(name = "concurrentNeedCheck")
-    protected boolean concurrentNeedCheck;
+    private String timestampKey;
     @XmlAttribute(name = "regexSql")
-    protected String regexSql;
+    private String regexSql;
     @XmlAttribute(name = "noNumRegexSql")
-    protected String noNumberRegexSql;
+    private String noNumberRegexSql;
     @XmlAttribute(name = "resultTable")
-    protected String resultTable;
+    private String resultTable;
     @XmlElement(name = "analyzerColumn")
-    protected Set<AnalyzerColumn> analyzerColumns = new HashSet<AnalyzerColumn>();
+    private Set<AnalyzerColumn> analyzerColumns = new HashSet<AnalyzerColumn>();
+    @XmlElement(name = "analyzerResultColumn")
+    private Set<String> analyzerResultColumns = new HashSet<String>();
     public Data() {
 
     }
@@ -85,14 +86,6 @@ public class Data {
         this.timestampKey = timestampKey;
     }
 
-    public boolean isConcurrentNeedCheck() {
-        return concurrentNeedCheck;
-    }
-
-    public void setConcurrentNeedCheck(boolean concurrentNeedCheck) {
-        this.concurrentNeedCheck = concurrentNeedCheck;
-    }
-
     public String getRegexSql() {
         return regexSql;
     }
@@ -123,5 +116,17 @@ public class Data {
 
     public void setAnalyzerColumns(Set<AnalyzerColumn> analyzerColumns) {
         this.analyzerColumns = analyzerColumns;
+    }
+
+    public Set<String> getAnalyzerResultColumns() {
+        Set<String> newAnalyzerResultColumns = Sets.newHashSet();
+        for (String analyzerResultColumn:analyzerResultColumns){
+            newAnalyzerResultColumns.add(analyzerResultColumn.toLowerCase());
+        }
+        return newAnalyzerResultColumns;
+    }
+
+    public void setAnalyzerResultColumns(Set<String> analyzerResultColumns) {
+        this.analyzerResultColumns = analyzerResultColumns;
     }
 }
