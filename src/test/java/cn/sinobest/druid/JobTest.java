@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Created by zhouyi1 on 2016/1/19 0019.
@@ -125,7 +127,7 @@ public class JobTest {
         }
     }
 
-    @Test
+//    @Test
     public void test4(){
         Data data = new Data();
         DetailQuery dq = new DetailQuery();
@@ -138,6 +140,29 @@ public class JobTest {
         BeanTool.copyProperties(data, schema, (String[]) null, true);
         System.out.println(schema.getSchemaName());
         System.out.println(schema.getDetailQuery());
+
+    }
+
+//    @Test
+    public void test5(){
+        boolean needMoreMatches = true;
+        boolean loop = true;
+        for (int i=0;needMoreMatches?false:(false && loop);loop = needMoreMatches,i++){
+            System.out.println(i);
+        }
+    }
+
+    class TaskRun implements Runnable{
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    @Test
+    public void test6(){
+        Executor executor = Executors.newCachedThreadPool();
 
     }
 }

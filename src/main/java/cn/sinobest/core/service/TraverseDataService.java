@@ -10,6 +10,7 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
@@ -33,6 +34,7 @@ import java.util.concurrent.*;
 */
 @Component
 @Scope(value = "prototype")
+@Lazy
 public class TraverseDataService {
     private static final Log logger = LogFactory.getLog(TraverseDataService.class);
 
@@ -45,12 +47,6 @@ public class TraverseDataService {
     private TimeManager timeManager;
 
     private IRowAnalyzerCallBackHandler rowCallbackHandler;
-
-    /**
-     * 给spring用的
-     */
-    public TraverseDataService() {
-    }
 
     public TraverseDataService(Schemaer schemaer,IRowAnalyzerCallBackHandler rowCallbackHandler) {
         Preconditions.checkNotNull(schemaer);

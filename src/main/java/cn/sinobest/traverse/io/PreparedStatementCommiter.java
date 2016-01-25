@@ -4,6 +4,7 @@ import cn.sinobest.core.common.util.SqlUtil;
 import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
@@ -26,16 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Component(value = "commiter")
 @Scope("prototype")
+@Lazy(value = true)
 public class PreparedStatementCommiter {
     private static final Log logger = LogFactory.getLog(PreparedStatementCommiter.class);
 
     private Connection conn;
 
     private PreparedStatement ps;
-
-    //给spring用
-    public PreparedStatementCommiter() {
-    }
 
     public PreparedStatement getPreparedStatement() {
         return ps;

@@ -1,12 +1,19 @@
 package cn.sinobest.core.common.util;
 
-import cn.sinobest.core.common.param.Param;
+import cn.sinobest.traverse.analyzer.RegularAnalyzer;
+import cn.sinobest.traverse.analyzer.regular.DefaultRegularConvertor;
+import cn.sinobest.traverse.analyzer.regular.IRegularConvertor;
 import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
+import jodd.util.ClassLoaderUtil;
+import jodd.util.ReflectUtil;
 import jodd.util.StringUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
+import org.springframework.util.ClassUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -15,12 +22,51 @@ import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * Created by zhouyi1 on 2016/1/21 0021.
  */
 public class SqlUtil {
+    private static final Log logger = LogFactory.getLog(SqlUtil.class);
 
+    public static IRegularConvertor getConvertor(String className){
+        IRegularConvertor convertor;
+        if (className!=null){
+            try {
+                Class convertorClass = ClassLoaderUtil.loadClass(className);
+                convertor = (IRegularConvertor) ReflectUtil.newInstance(convertorClass);
+            } catch (ClassNotFoundException e) {
+                logger.error(className+"can't find in classLoader!");
+            } catch (InstantiationException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } finally {
+                convertor = new DefaultRegularConvertor();
+            }
+        }else{
+            convertor = new DefaultRegularConvertor();
+        }
+        return convertor;
+    }
+
+    public static Pattern getPattern(String regex,IRegularConvertor convertor) throws NullPointerException{
+        Preconditions.checkNotNull(regex);
+        Preconditions.checkNotNull(convertor);
+        String cpgz = regex;
+        int startIndex = cpgz.indexOf('/')+1;
+        int endIndex = cpgz.lastIndexOf('/');
+        cpgz = convertor.getRealRegex(cpgz.substring(startIndex, endIndex));
+        return Pattern.compile(cpgz);
+    }
+
+    /**
+     * Convert.toString(Object value, String defaultValue)
+     * @param clob
+     * @return
+     */
+    @Deprecated
     public static String ClobToString(Clob clob) {
         if(clob==null){
             return "";

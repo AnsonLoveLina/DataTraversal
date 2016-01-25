@@ -44,9 +44,9 @@ public class SqlSchemaer {
 
     public PreparedStatementCommiter getCommiter(ParsedSql sql) {
         if (commiters.isEmpty()){
-
-            commiters.put(getInsertSql(), (PreparedStatementCommiter) SpringContextInit.getBeanByAware("commiter", (DataSource) SpringContextInit.getBeanByAware("dataSource"), SqlUtil.getSubstituteNamedParameters(getInsertSql())));
-
+            DataSource ds = (DataSource)SpringContextInit.getBeanByAware("dataSource");
+            PreparedStatementCommiter commiter =(PreparedStatementCommiter) SpringContextInit.getBeanByAware("commiter",ds,SqlUtil.getSubstituteNamedParameters(getInsertSql()));
+            commiters.put(getInsertSql(), commiter);
         }
         return commiters.get(sql);
     }

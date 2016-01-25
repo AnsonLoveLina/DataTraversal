@@ -10,16 +10,21 @@ import cn.sinobest.traverse.adapter.CallBackAdapter;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.analyzer.StringAnalyzer;
 import cn.sinobest.traverse.io.PreparedStatementCommiter;
+import cn.sinobest.traverse.po.InsertParamObject;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.sun.xml.internal.ws.server.sei.SEIInvokerTube;
+import jodd.typeconverter.Convert;
 import jodd.util.CollectionUtil;
 import org.apache.commons.collections.SetUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
@@ -40,6 +45,7 @@ import java.util.concurrent.*;
  */
 @Component(value = "analyzerCallBackHandler")
 @Scope(value = "prototype")
+@Lazy
 public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandler {
     private static final Log logger = LogFactory.getLog(RowAnalyzerCallBackHandlerImpl.class);
 
@@ -54,12 +60,6 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     @Override
     public void setComplete(boolean isComplete) {
         this.isComplete = isComplete;
-    }
-
-    /**
-     * 给spring用
-     */
-    public RowAnalyzerCallBackHandlerImpl() {
     }
 
     public RowAnalyzerCallBackHandlerImpl(Schemaer schemaer) {
@@ -111,19 +111,45 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
 
     private class Task implements Runnable {
 
-        private HashMap<String, Object> rowMaps;
+        private HashMap<String, String> rowMaps;
+        private IAnalyzer analyzer;
+        private Set<AnalyzerColumn> analyzerColumns;
 
-        public Task(HashMap<String, Object> rowMaps) {
+        public Task(HashMap<String, String> rowMaps, IAnalyzer analyzer, Set<AnalyzerColumn> analyzerColumns) {
             this.rowMaps = rowMaps;
+            this.analyzer = analyzer;
+            this.analyzerColumns = analyzerColumns;
         }
 
         @Override
         public void run() {
-            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), rowMaps);
+            Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps,sqlSchemaer.getAnalyzer(),analyzerColumns);
+            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
         }
     }
 
-    private void processBiz(ParsedSql insertSql,ParsedSql endUpdateSql,HashMap<String,Object> paramMap) {
+    @Autowired
+    private CallBackAdapter adapter;
+
+    @Override
+    public void processRow(ResultSet resultSet) throws SQLException {
+        //没把分析字段并且获取结果放到JUC环境中，主要是因为这个方法大部分都是纯CPU计算的、没有太多的IO和非CPU等待，放入到JUC后不一定能提高多大效率
+        HashMap<String, String> rowMaps = getRowMap(resultSet);
+        if (rowMaps.isEmpty()) {
+            logger.trace("该条数据没有有效数据!");
+            return;
+        }
+//        Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps,sqlSchemaer.getAnalyzer(),sqlSchemaer.getAnalyzerColumns());
+        if (concurrentNum == 0) {
+            Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps,sqlSchemaer.getAnalyzer(),sqlSchemaer.getAnalyzerColumns());
+            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
+        } else if (concurrentNum > 0) {
+            Set<AnalyzerColumn> analyzerColumns = Sets.newHashSet(sqlSchemaer.getAnalyzerColumns());
+            executor.get().execute(new Task(rowMaps,sqlSchemaer.getAnalyzer(),analyzerColumns));
+        }
+    }
+
+    private void processBiz(ParsedSql insertSql,ParsedSql endUpdateSql,Set<InsertParamObject> paramMap) {
         Preconditions.checkNotNull(insertSql);
 //        PreparedStatementCommiter commiter = null;
 //        try {
@@ -137,35 +163,31 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
 
     }
 
-    @Autowired
-    private CallBackAdapter adapter;
+    //遍历使用的迭代遍历，如果集合在JUC环境外，线程不安全
+    private Set<InsertParamObject> analyzerRowMap(HashMap<String, String> rowMaps,IAnalyzer analyzer,Set<AnalyzerColumn> analyzerColumns){
+        Set<InsertParamObject> paramObjectSet = Sets.newHashSet();
+        for (AnalyzerColumn analyzerColumn:analyzerColumns){
+            String analyzerSource = rowMaps.get(analyzerColumn.toString());
+            paramObjectSet.addAll(analyzer.analyzerStr(analyzerSource, analyzerColumn));
+        }
 
-    @Override
-    public void processRow(ResultSet resultSet) throws SQLException {
-        //没把分析字段并且获取结果放到JUC环境中，主要是因为这个方法大部分都是纯CPU计算的、没有太多的IO和非CPU等待，放入到JUC后不一定能提高多大效率
-        HashMap<String, Object> rowMaps = getRowMap(resultSet);
-        if (rowMaps.isEmpty()) {
-            logger.trace("该条数据没有分析出任何有效数据!");
-            return;
+        for (InsertParamObject paramObject:paramObjectSet){
+            paramObject.mergeParamMap(rowMaps);
         }
-        if (concurrentNum == 0) {
-            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), rowMaps);
-        } else if (concurrentNum > 0) {
-            executor.get().execute(new Task(rowMaps));
-        }
+        return paramObjectSet;
     }
 
-    private HashMap<String,Object> getRowMap(ResultSet resultSet) throws SQLException{
+    private HashMap<String,String> getRowMap(ResultSet resultSet) throws SQLException{
         Preconditions.checkNotNull(resultSet);
-        HashMap<String, Object> rowMap = new HashMap<String, Object>();
+        HashMap<String, String> rowMap = new HashMap<String, String>();
         Set<AnalyzerColumn> analyzerColumns = sqlSchemaer.getAnalyzerColumns();
         Set<String> columns = sqlSchemaer.getColumns();
         Set<String> traverseColumns = sqlSchemaer.getTraverseColumns();
         int count = 0;
         for (String columnName : columns){
-            Object columnValue = null;
+            String columnValue = null;
             if (traverseColumns.contains(columnName)){
-                columnValue = resultSet.getObject(columnName);
+                columnValue = Convert.toString(resultSet.getObject(columnName));
                 if (columnValue!=null && analyzerColumns.contains(new AnalyzerColumn(columnName))){
                     count++;
                 }
@@ -173,7 +195,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
             rowMap.put(columnName,columnValue);
         }
 
-        return analyzerColumns.size()>count?rowMap:new HashMap<String, Object>();
+        return analyzerColumns.size()>count?rowMap:new HashMap<String, String>();
     }
 
 

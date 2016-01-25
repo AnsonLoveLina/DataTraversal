@@ -5,68 +5,68 @@
        xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 
-       <!--<context:annotation-config/>-->
-       <!--<aop:aspectj-autoproxy/>-->
-       <context:component-scan base-package="cn.sinobest.core.common.init" />
-       <!--<context:property-placeholder location="classpath*:*.properties"/>-->
+       <context:annotation-config/>
+       <aop:aspectj-autoproxy/>
+       <context:component-scan base-package="cn.sinobest.core.common.init,cn.sinobest.traverse.analyzer" />
+       <context:property-placeholder location="classpath*:*.properties"/>
 
-       <!--<bean id="initDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">-->
-              <!--<property name="username" value="${oracle.jdbc.username}"/>-->
-              <!--<property name="password" value="${oracle.jdbc.password}"/>-->
-              <!--<property name="driverClass" value="${oracle.jdbc.driver}"/>-->
-              <!--<property name="url" value="${oracle.jdbc.url}"/>-->
-       <!--</bean>-->
+       <bean id="initDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
+              <property name="username" value="${oracle.jdbc.username}"/>
+              <property name="password" value="${oracle.jdbc.password}"/>
+              <property name="driverClass" value="${oracle.jdbc.driver}"/>
+              <property name="url" value="${oracle.jdbc.url}"/>
+       </bean>
 
-       <!--<bean id="myOracleLogger" class="cn.sinobest.druid.MyDruidOracleLogger" init-method="init">-->
-              <!--<constructor-arg name="druidLoggerDatasource" ref="initDataSource"/>-->
-       <!--</bean>-->
+       <bean id="myOracleLogger" class="cn.sinobest.druid.MyDruidOracleLogger" init-method="init">
+              <constructor-arg name="druidLoggerDatasource" ref="initDataSource"/>
+       </bean>
 
-       <!--<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">-->
+       <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
 
-              <!--<property name="driverClassName" value="${oracle.jdbc.driver}"/>-->
-              <!--<property name="url" value="${oracle.jdbc.url}"/>-->
-              <!--<property name="username" value="${oracle.jdbc.username}"/>-->
-              <!--<property name="password" value="${oracle.jdbc.password}"/>-->
+              <property name="driverClassName" value="${oracle.jdbc.driver}"/>
+              <property name="url" value="${oracle.jdbc.url}"/>
+              <property name="username" value="${oracle.jdbc.username}"/>
+              <property name="password" value="${oracle.jdbc.password}"/>
 
-              <!--<property name="timeBetweenLogStatsMillis" value="${oracle.jdbc.timeBetweenLogStatsMillis}"/>-->
+              <property name="timeBetweenLogStatsMillis" value="${oracle.jdbc.timeBetweenLogStatsMillis}"/>
 
-              <!--&lt;!&ndash; 配置初始化大小、最小、最大 &ndash;&gt;-->
-              <!--<property name="initialSize" value="${oracle.jdbc.initialSize}"/>-->
-              <!--<property name="minIdle" value="${oracle.jdbc.minIdle}"/>-->
-              <!--<property name="maxActive" value="${oracle.jdbc.maxActive}"/>-->
+              <!-- 配置初始化大小、最小、最大 -->
+              <property name="initialSize" value="${oracle.jdbc.initialSize}"/>
+              <property name="minIdle" value="${oracle.jdbc.minIdle}"/>
+              <property name="maxActive" value="${oracle.jdbc.maxActive}"/>
 
-              <!--&lt;!&ndash; 配置获取连接等待超时的时间 &ndash;&gt;-->
-              <!--<property name="maxWait" value="${oracle.jdbc.maxWait}"/>-->
-              <!--&lt;!&ndash; 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 &ndash;&gt;-->
-              <!--<property name="timeBetweenEvictionRunsMillis" value="${oracle.jdbc.timeBetweenEvictionRunsMillis}" />-->
+              <!-- 配置获取连接等待超时的时间 -->
+              <property name="maxWait" value="${oracle.jdbc.maxWait}"/>
+              <!-- 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒 -->
+              <property name="timeBetweenEvictionRunsMillis" value="${oracle.jdbc.timeBetweenEvictionRunsMillis}" />
 
-              <!--&lt;!&ndash; 配置一个连接在池中最小生存的时间，单位是毫秒 &ndash;&gt;-->
-              <!--<property name="minEvictableIdleTimeMillis" value="${oracle.jdbc.minEvictableIdleTimeMillis}" />-->
+              <!-- 配置一个连接在池中最小生存的时间，单位是毫秒 -->
+              <property name="minEvictableIdleTimeMillis" value="${oracle.jdbc.minEvictableIdleTimeMillis}" />
 
-              <!--&lt;!&ndash; 查询超时时候 &ndash;&gt;-->
-              <!--<property name="queryTimeout" value="${oracle.jdbc.querytimeout}"/>-->
+              <!-- 查询超时时候 -->
+              <property name="queryTimeout" value="${oracle.jdbc.querytimeout}"/>
 
-              <!--<property name="validationQuery" value="${oracle.jdbc.validationQuery}" />-->
-              <!--<property name="connectionInitSqls" value="${oracle.jdbc.connectionInitSqls}"/>-->
-              <!--<property name="testWhileIdle" value="${oracle.jdbc.testWhileIdle}" />-->
-              <!--<property name="testOnBorrow" value="${oracle.jdbc.testOnBorrow}" />-->
-              <!--<property name="testOnReturn" value="${oracle.jdbc.testOnReturn}" />-->
+              <property name="validationQuery" value="${oracle.jdbc.validationQuery}" />
+              <property name="connectionInitSqls" value="${oracle.jdbc.connectionInitSqls}"/>
+              <property name="testWhileIdle" value="${oracle.jdbc.testWhileIdle}" />
+              <property name="testOnBorrow" value="${oracle.jdbc.testOnBorrow}" />
+              <property name="testOnReturn" value="${oracle.jdbc.testOnReturn}" />
 
-              <!--&lt;!&ndash; 打开PSCache，并且指定每个连接上PSCache的大小-->
-              <!--如果用Oracle，则把poolPreparedStatements配置为true，gbase可以配置为false。&ndash;&gt;-->
-              <!--<property name="poolPreparedStatements" value="${oracle.jdbc.poolPreparedStatements}" />-->
-              <!--&lt;!&ndash;<property name="maxPoolPreparedStatementPerConnectionSize" value="${oracle.jdbc.maxPoolPreparedStatementPerConnectionSize}" />&ndash;&gt;-->
+              <!-- 打开PSCache，并且指定每个连接上PSCache的大小
+              如果用Oracle，则把poolPreparedStatements配置为true，gbase可以配置为false。-->
+              <property name="poolPreparedStatements" value="${oracle.jdbc.poolPreparedStatements}" />
+              <!--<property name="maxPoolPreparedStatementPerConnectionSize" value="${oracle.jdbc.maxPoolPreparedStatementPerConnectionSize}" />-->
 
-              <!--&lt;!&ndash;日志&ndash;&gt;-->
-              <!--<property name="statLogger" ref="myOracleLogger" />-->
+              <!--日志-->
+              <property name="statLogger" ref="myOracleLogger" />
 
-              <!--&lt;!&ndash; 配置监控统计拦截的filters &ndash;&gt;-->
-              <!--<property name="filters" value="${oracle.jdbc.filters}" />-->
+              <!-- 配置监控统计拦截的filters -->
+              <property name="filters" value="${oracle.jdbc.filters}" />
 
-       <!--</bean>-->
-       <!--<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >-->
-              <!--<property name="dataSource" ref="dataSource" />-->
-       <!--</bean>-->
+       </bean>
+       <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >
+              <property name="dataSource" ref="dataSource" />
+       </bean>
 
 
 </beans>
