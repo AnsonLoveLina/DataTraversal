@@ -44,8 +44,8 @@ public class SchemaerFactoryTest {
         rowMap.put("ajid","pcs234234234");
         rowMap.put("ajmc","mcsdfds");
         rowMap.put("ajbh","234234");
-        rowMap.put("zjhm","430102198704020515");
-        rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他信息？");
+        rowMap.put("zjhm","43010219870402051x");
+        rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？");
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
