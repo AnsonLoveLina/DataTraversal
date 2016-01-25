@@ -25,6 +25,7 @@ public class AnalyzerColumn {
         this.analyzerColumn = analyzerColumn;
     }
 
+    //给jaxb用
     public AnalyzerColumn() {
     }
 

@@ -1,5 +1,6 @@
 package cn.sinobest.core.common.util;
 
+import cn.sinobest.core.common.init.SpringContextInit;
 import cn.sinobest.traverse.analyzer.RegularAnalyzer;
 import cn.sinobest.traverse.analyzer.regular.DefaultRegularConvertor;
 import cn.sinobest.traverse.analyzer.regular.IRegularConvertor;
@@ -11,6 +12,7 @@ import jodd.util.ReflectUtil;
 import jodd.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
 import org.springframework.util.ClassUtils;
@@ -35,7 +37,11 @@ public class SqlUtil {
         if (className!=null){
             try {
                 Class convertorClass = ClassLoaderUtil.loadClass(className);
-                convertor = (IRegularConvertor) ReflectUtil.newInstance(convertorClass);
+                try{
+                    convertor = (IRegularConvertor) SpringContextInit.getContext().getBean(convertorClass);
+                }catch (NoSuchBeanDefinitionException e){
+                    convertor = (IRegularConvertor) ReflectUtil.newInstance(convertorClass);
+                }
             } catch (ClassNotFoundException e) {
                 logger.error(className+"can't find in classLoader!");
             } catch (InstantiationException e) {

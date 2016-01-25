@@ -128,7 +128,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         }
     }
 
-    @Autowired
+//    @Autowired
     private CallBackAdapter adapter;
 
     @Override
@@ -164,15 +164,24 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     }
 
     //遍历使用的迭代遍历，如果集合在JUC环境外，线程不安全
-    private Set<InsertParamObject> analyzerRowMap(HashMap<String, String> rowMaps,IAnalyzer analyzer,Set<AnalyzerColumn> analyzerColumns){
+    public Set<InsertParamObject> analyzerRowMap(Map<String, String> rowMap,IAnalyzer analyzer,final Set<AnalyzerColumn> analyzerColumns){
         Set<InsertParamObject> paramObjectSet = Sets.newHashSet();
         for (AnalyzerColumn analyzerColumn:analyzerColumns){
-            String analyzerSource = rowMaps.get(analyzerColumn.toString());
+            String analyzerSource = rowMap.get(analyzerColumn.toString());
             paramObjectSet.addAll(analyzer.analyzerStr(analyzerSource, analyzerColumn));
+            System.out.println("");
         }
 
+        rowMap = Maps.filterKeys(rowMap, new Predicate<String>() {
+            @Override
+            public boolean apply(String s) {
+                return !analyzerColumns.contains(new AnalyzerColumn(s));
+            }
+        });
+
         for (InsertParamObject paramObject:paramObjectSet){
-            paramObject.mergeParamMap(rowMaps);
+            Map<String, String> paramMap = Maps.newHashMap(rowMap);
+            paramObject.mergeParamMap(paramMap);
         }
         return paramObjectSet;
     }
