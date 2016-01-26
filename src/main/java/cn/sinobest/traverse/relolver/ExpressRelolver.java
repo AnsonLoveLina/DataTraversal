@@ -1,4 +1,4 @@
-package cn.sinobest.traverse.analyzer;
+package cn.sinobest.traverse.relolver;
 
 /**
  * Created by zhouyi1 on 2016/1/25 0025.

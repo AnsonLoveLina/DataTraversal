@@ -4,16 +4,13 @@ import cn.sinobest.core.common.util.RegularAnalyzerUtil;
 import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.schema.SqlSchemaer;
+import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.analyzer.regular.IRegularConvertor;
 import cn.sinobest.traverse.po.InsertParamObject;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import jodd.bean.BeanTool;
-import jodd.bean.BeanUtil;
-import jodd.typeconverter.Convert;
 import jodd.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -25,7 +22,6 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +35,7 @@ import java.util.regex.Pattern;
 public class RegularAnalyzer implements IAnalyzer {
     private static final Log logger = LogFactory.getLog(RegularAnalyzer.class);
 
-//    @Resource(name = "jdbcTemplate")
+    @Resource(name = "jdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     private SqlSchemaer sqlSchemaer;
@@ -85,17 +81,17 @@ public class RegularAnalyzer implements IAnalyzer {
 
     @PostConstruct
     public void init(){
-//        List<Map<String,Object>> regex = jdbcTemplate.queryForList(sqlSchemaer.getRegexSql());
-//        List<Map<String,Object>> noNumRegex = jdbcTemplate.queryForList(sqlSchemaer.getNoNumberRegexSql());
-        Map<String,Object> map1 = Maps.newHashMap();
-        map1.put("CODE","001");
-        map1.put("GZ","/\\d{18}|\\d{17}[x|X]|\\d{15}/");
+        List<Map<String,Object>> regex = jdbcTemplate.queryForList(sqlSchemaer.getRegexSql());
+        List<Map<String,Object>> noNumRegex = jdbcTemplate.queryForList(sqlSchemaer.getNoNumberRegexSql());
+//        Map<String,Object> map1 = Maps.newHashMap();
+//        map1.put("CODE","001");
+//        map1.put("GZ","/\\d{18}|\\d{17}[x|X]|\\d{15}/");
 //        map1.put("ANALYZERCLASS","cn.sinobest.traverse.analyzer.regular.SFZHRegularConvertor");
-        Map<String,Object> map2 = Maps.newHashMap();
-        map2.put("CODE","002");
-        map2.put("GZ","/\\d{9}/");
-        List<Map<String,Object>> regex = Lists.newArrayList(map2);
-        List<Map<String,Object>> noNumRegex = Lists.newArrayList(map1);
+//        Map<String,Object> map2 = Maps.newHashMap();
+//        map2.put("CODE","002");
+//        map2.put("GZ","/\\d{9}/");
+//        List<Map<String,Object>> regex = Lists.newArrayList(map2);
+//        List<Map<String,Object>> noNumRegex = Lists.newArrayList(map1);
         setPatterns(patterns,regex);
         setPatterns(noNumPatterns,noNumRegex);
 
@@ -137,7 +133,7 @@ public class RegularAnalyzer implements IAnalyzer {
                 HashMap<String,String> paramMap = Maps.newHashMap();
                 paramMap.put(bshidName,bshid);
                 paramMap.put(bshlxName,bshlx);
-                paramObjectsTarget.add(new InsertParamObject(paramMap,analyzerColumn.toString()));
+                paramObjectsTarget.add(new InsertParamObject(paramMap,analyzerColumn));
             }
         }
     }

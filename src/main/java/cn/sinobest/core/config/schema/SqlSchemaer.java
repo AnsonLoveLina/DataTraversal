@@ -1,14 +1,11 @@
 package cn.sinobest.core.config.schema;
 
 import cn.sinobest.core.common.init.SpringContextInit;
-import cn.sinobest.core.common.param.Param;
 import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.po.ITraverseQuery;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
-import cn.sinobest.traverse.analyzer.RegularAnalyzer;
 import cn.sinobest.traverse.io.PreparedStatementCommiter;
-import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
 
 import javax.sql.DataSource;

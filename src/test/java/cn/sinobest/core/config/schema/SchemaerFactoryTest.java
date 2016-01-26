@@ -46,7 +46,7 @@ public class SchemaerFactoryTest {
         rowMap.put("ajbh","234234");
         rowMap.put("zjhm","43010219870402051x");
         rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？");
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDB.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();
