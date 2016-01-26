@@ -16,6 +16,7 @@ import java.util.Set;
 /**
  * Created by zy-xx on 16/1/24.
  * 每个语句一个sqlSchemaer
+ * ITraverseQuery:SqlSchemaer = 1:1
  */
 public class SqlSchemaer {
     public final String primaryKeyName = "SYSTEMID";

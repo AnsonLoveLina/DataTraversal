@@ -7,7 +7,7 @@
 
        <context:annotation-config/>
        <aop:aspectj-autoproxy/>
-       <context:component-scan base-package="cn.sinobest.core.common.init,cn.sinobest.traverse.analyzer,cn.sinobest.traverse.handler" />
+       <context:component-scan base-package="cn.sinobest.core.common.init,cn.sinobest.traverse.analyzer,cn.sinobest.traverse.handler,cn.sinobest.traverse.relolver" />
        <context:property-placeholder location="classpath*:*.properties"/>
 
        <!--<bean id="initDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">-->

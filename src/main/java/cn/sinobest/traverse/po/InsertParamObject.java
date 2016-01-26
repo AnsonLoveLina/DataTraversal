@@ -21,7 +21,7 @@ public class InsertParamObject implements IParamObject {
     private static final Log logger = LogFactory.getLog(InsertParamObject.class);
     private Map<String, String> paramMap = Maps.newHashMap();
 
-    private Set<AnalyzerColumn> analyzerColumnNames = Sets.newHashSet();
+    private Set<AnalyzerColumn> analyzerColumns = Sets.newHashSet();
 
     private String primaryKey = "";
 
@@ -62,21 +62,21 @@ public class InsertParamObject implements IParamObject {
         InsertParamObject temp = (InsertParamObject)obj;
         boolean result = primaryKey.equals(temp.getPrimaryKey());
         if (result && this.hashCode()==obj.hashCode()){
-            temp.mergeAnalyzerColumns(getAnalyzerColumnNames());
+            temp.mergeAnalyzerColumns(getAnalyzerColumns());
         }
         return result;
     }
 
-    public Set<AnalyzerColumn> getAnalyzerColumnNames() {
-        return analyzerColumnNames;
+    public Set<AnalyzerColumn> getAnalyzerColumns() {
+        return analyzerColumns;
     }
 
     public void mergeAnalyzerColumns(Set<AnalyzerColumn> analyzerColumns){
-        this.analyzerColumnNames.addAll(analyzerColumns);
+        this.analyzerColumns.addAll(analyzerColumns);
     }
 
     private void mergeAnalyzerColumn(AnalyzerColumn analyzerColumn){
-        this.analyzerColumnNames.add(analyzerColumn);
+        this.analyzerColumns.add(analyzerColumn);
     }
 
     @Override

@@ -11,5 +11,5 @@ import java.util.Set;
  */
 public interface IParamObject {
     public void mergeParamMap(Map<String,String> paramMap);
-    public Set<AnalyzerColumn> getAnalyzerColumnNames();
+    public Set<AnalyzerColumn> getAnalyzerColumns();
 }

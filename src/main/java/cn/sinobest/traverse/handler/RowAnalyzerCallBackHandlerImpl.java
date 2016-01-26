@@ -11,6 +11,7 @@ import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.analyzer.StringAnalyzer;
 import cn.sinobest.traverse.io.PreparedStatementCommiter;
 import cn.sinobest.traverse.po.InsertParamObject;
+import cn.sinobest.traverse.relolver.IExpressRelolver;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
@@ -32,6 +33,7 @@ import org.springframework.jdbc.core.namedparam.ParsedSql;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,6 +50,9 @@ import java.util.concurrent.*;
 @Lazy
 public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandler {
     private static final Log logger = LogFactory.getLog(RowAnalyzerCallBackHandlerImpl.class);
+
+    @Resource(name = "expressRelolver")
+    IExpressRelolver relolver;
 
     private Schemaer schemaer;
 
@@ -128,9 +133,6 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         }
     }
 
-//    @Autowired
-    private CallBackAdapter adapter;
-
     @Override
     public void processRow(ResultSet resultSet) throws SQLException {
         //没把分析字段并且获取结果放到JUC环境中，主要是因为这个方法大部分都是纯CPU计算的、没有太多的IO和非CPU等待，放入到JUC后不一定能提高多大效率
@@ -169,7 +171,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         for (AnalyzerColumn analyzerColumn:analyzerColumns){
             String analyzerSource = rowMap.get(analyzerColumn.toString());
             paramObjectSet.addAll(analyzer.analyzerStr(analyzerSource, analyzerColumn));
-            System.out.println("");
+//            System.out.println("");
         }
 
         rowMap = Maps.filterKeys(rowMap, new Predicate<String>() {
@@ -182,6 +184,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         for (InsertParamObject paramObject:paramObjectSet){
             Map<String, String> paramMap = Maps.newHashMap(rowMap);
             paramObject.mergeParamMap(paramMap);
+            relolver.explain(paramObject);
         }
         return paramObjectSet;
     }

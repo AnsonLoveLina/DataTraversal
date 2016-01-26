@@ -5,6 +5,7 @@ import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
 import cn.sinobest.traverse.po.InsertParamObject;
 import com.google.common.collect.Maps;
+import jodd.util.StringUtil;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -46,7 +47,7 @@ public class SchemaerFactoryTest {
         rowMap.put("ajbh","234234");
         rowMap.put("zjhm","43010219870402051x");
         rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？");
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDB.xml");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();
@@ -61,6 +62,11 @@ public class SchemaerFactoryTest {
             for (Map.Entry<String,String> entry:paramObject.getParamMap().entrySet()){
                 System.out.println(entry.getKey() + " = " + entry.getValue());
             }
+            System.out.print("analyzerColumn ：");
+            for (AnalyzerColumn analyzerColumn:paramObject.getAnalyzerColumns()){
+                System.out.print(analyzerColumn.toString()+"，");
+            }
+            System.out.println("");
         }
 
     }
@@ -78,7 +84,7 @@ public class SchemaerFactoryTest {
         sqlSchemaer.getInsertColumns();
         sqlSchemaer.getEndUpdateSql();
         IAnalyzer analyzer = (IAnalyzer) applicationContext.getBean("regularAnalyzer",sqlSchemaer);
-        Set<InsertParamObject> paramObjectSet = analyzer.analyzerStr("430102198704020515", new AnalyzerColumn("ZJHM"));
+        Set<InsertParamObject> paramObjectSet = analyzer.analyzerStr("周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？", new AnalyzerColumn("ZJHM"));
         printParamObjectSet(paramObjectSet);
 //        Executor executor = Executors.newCachedThreadPool();
 //        for (int i=0;i<999999;i++){

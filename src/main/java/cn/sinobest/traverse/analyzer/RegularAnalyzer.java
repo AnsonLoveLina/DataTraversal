@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
 public class RegularAnalyzer implements IAnalyzer {
     private static final Log logger = LogFactory.getLog(RegularAnalyzer.class);
 
-    @Resource(name = "jdbcTemplate")
+//    @Resource(name = "jdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     private SqlSchemaer sqlSchemaer;
@@ -81,17 +81,20 @@ public class RegularAnalyzer implements IAnalyzer {
 
     @PostConstruct
     public void init(){
-        List<Map<String,Object>> regex = jdbcTemplate.queryForList(sqlSchemaer.getRegexSql());
-        List<Map<String,Object>> noNumRegex = jdbcTemplate.queryForList(sqlSchemaer.getNoNumberRegexSql());
-//        Map<String,Object> map1 = Maps.newHashMap();
-//        map1.put("CODE","001");
-//        map1.put("GZ","/\\d{18}|\\d{17}[x|X]|\\d{15}/");
-//        map1.put("ANALYZERCLASS","cn.sinobest.traverse.analyzer.regular.SFZHRegularConvertor");
-//        Map<String,Object> map2 = Maps.newHashMap();
-//        map2.put("CODE","002");
-//        map2.put("GZ","/\\d{9}/");
-//        List<Map<String,Object>> regex = Lists.newArrayList(map2);
-//        List<Map<String,Object>> noNumRegex = Lists.newArrayList(map1);
+//        List<Map<String,Object>> regex = jdbcTemplate.queryForList(sqlSchemaer.getRegexSql());
+//        List<Map<String,Object>> noNumRegex = jdbcTemplate.queryForList(sqlSchemaer.getNoNumberRegexSql());
+        Map<String,Object> map1 = Maps.newHashMap();
+        map1.put("CODE","001");
+        map1.put("GZ","/\\d{18}|\\d{17}[x|X]|\\d{15}/");
+        map1.put("ANALYZERCLASS","cn.sinobest.traverse.analyzer.regular.SFZHRegularConvertor");
+        Map<String,Object> map2 = Maps.newHashMap();
+        map2.put("CODE","002");
+        map2.put("GZ","/^\\d{9}/");
+        Map<String,Object> map3 = Maps.newHashMap();
+        map3.put("CODE","003");
+        map3.put("GZ","/^\\d{17}/");
+        List<Map<String,Object>> regex = Lists.newArrayList(map2,map3);
+        List<Map<String,Object>> noNumRegex = Lists.newArrayList(map1);
         setPatterns(patterns,regex);
         setPatterns(noNumPatterns,noNumRegex);
 

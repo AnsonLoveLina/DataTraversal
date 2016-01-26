@@ -14,11 +14,11 @@ public class PatternTest {
 
     @Test
     public void test(){
-        Pattern pattern = SqlUtil.getPattern("/\\d{18}/", new DefaultRegularConvertor());
-        String str = "周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他信息？";
+        Pattern pattern = SqlUtil.getPattern("/^\\d{9}/", new DefaultRegularConvertor());
+        String str = "326236882";
         Matcher matcher = pattern.matcher(str);
-        while(matcher.find()){
-            System.out.println(matcher.group());
+        while(matcher.matches()){
+            System.out.println(str);
         }
     }
 }
