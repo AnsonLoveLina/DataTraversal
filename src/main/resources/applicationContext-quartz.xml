@@ -16,7 +16,7 @@
     </bean>
 
     <task:scheduled-tasks>
-        <task:scheduled ref="job" method="execute" fixed-delay="300000"/>
+        <task:scheduled ref="job" method="execute" fixed-delay="30000"/>
         <!--<task:scheduled ref="commiter" method="executeAndCommit" fixed-delay="100"/>-->
     </task:scheduled-tasks>
 

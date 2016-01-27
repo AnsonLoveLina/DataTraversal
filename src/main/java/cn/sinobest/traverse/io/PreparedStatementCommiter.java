@@ -2,8 +2,10 @@ package cn.sinobest.traverse.io;
 
 import cn.sinobest.core.common.util.SqlUtil;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -25,11 +27,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Created by zy-xx on 16/1/21.
  * 好吧，叫这个名字肯定要比较吊
  */
-@Component(value = "commiter")
+@Component(value = "preparedStatementCommiter")
 @Scope("prototype")
-@Lazy(value = true)
-public class PreparedStatementCommiter {
+@Lazy
+public class PreparedStatementCommiter implements IBatchCommiter {
     private static final Log logger = LogFactory.getLog(PreparedStatementCommiter.class);
+
+    @Resource(name = "dataSource")
+    private DataSource dataSource;
 
     private Connection conn;
 
@@ -39,12 +44,24 @@ public class PreparedStatementCommiter {
         return ps;
     }
 
-    public PreparedStatementCommiter(DataSource dataSource, String processResultSql) {
+    public PreparedStatementCommiter(String processResultSql) {
         try {
-            this.conn = dataSource.getConnection();
+            this.conn = this.dataSource.getConnection();
             this.ps = conn.prepareStatement(processResultSql);
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void setObjects(Object... params) {
+        try {
+            for (int i = 0; i < params.length; i++) {
+                Object param = params[i];
+                ps.setObject(i + 1, param);
+            }
+            ps.addBatch();
+        } catch (SQLException e) {
+            logger.error("ps.setObject error!",e);
         }
     }
 
@@ -58,21 +75,8 @@ public class PreparedStatementCommiter {
                 ps.executeBatch();
                 conn.commit();
             } catch (SQLException e) {
-                e.printStackTrace();
+                logger.error("commit error!",e);
             }
-        }
-    }
-
-    /**
-     * 目前是限时自动commit
-     * 这个方法是给次数commit用的
-     *
-     * @param processResultSql
-     */
-    public void addBatch(ParsedSql processResultSql) {
-        count.incrementAndGet();
-        if (count.compareAndSet(10000, 0)) {
-            executeAndCommit();
         }
     }
 }

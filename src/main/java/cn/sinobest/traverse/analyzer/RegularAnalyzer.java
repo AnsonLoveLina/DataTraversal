@@ -1,5 +1,6 @@
 package cn.sinobest.traverse.analyzer;
 
+import cn.sinobest.core.common.util.PrintUtil;
 import cn.sinobest.core.common.util.RegularAnalyzerUtil;
 import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +37,7 @@ import java.util.regex.Pattern;
 public class RegularAnalyzer implements IAnalyzer {
     private static final Log logger = LogFactory.getLog(RegularAnalyzer.class);
 
-//    @Resource(name = "jdbcTemplate")
+    @Resource(name = "jdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
     private SqlSchemaer sqlSchemaer;
@@ -67,8 +69,8 @@ public class RegularAnalyzer implements IAnalyzer {
         }
     }
 
-    private LinkedList<PatternInfo> patterns = new LinkedList<PatternInfo>();
-    private LinkedList<PatternInfo> noNumPatterns = new LinkedList<PatternInfo>();
+    private List<PatternInfo> patterns = new ArrayList<PatternInfo>();
+    private List<PatternInfo> noNumPatterns = new ArrayList<PatternInfo>();
 
     public RegularAnalyzer(SqlSchemaer sqlSchemaer) {
         Preconditions.checkNotNull(sqlSchemaer);
@@ -81,26 +83,26 @@ public class RegularAnalyzer implements IAnalyzer {
 
     @PostConstruct
     public void init(){
-//        List<Map<String,Object>> regex = jdbcTemplate.queryForList(sqlSchemaer.getRegexSql());
-//        List<Map<String,Object>> noNumRegex = jdbcTemplate.queryForList(sqlSchemaer.getNoNumberRegexSql());
-        Map<String,Object> map1 = Maps.newHashMap();
-        map1.put("CODE","001");
-        map1.put("GZ","/\\d{18}|\\d{17}[x|X]|\\d{15}/");
-        map1.put("ANALYZERCLASS","cn.sinobest.traverse.analyzer.regular.SFZHRegularConvertor");
-        Map<String,Object> map2 = Maps.newHashMap();
-        map2.put("CODE","002");
-        map2.put("GZ","/^\\d{9}/");
-        Map<String,Object> map3 = Maps.newHashMap();
-        map3.put("CODE","003");
-        map3.put("GZ","/^\\d{17}/");
-        List<Map<String,Object>> regex = Lists.newArrayList(map2,map3);
-        List<Map<String,Object>> noNumRegex = Lists.newArrayList(map1);
+        List<Map<String,Object>> regex = jdbcTemplate.queryForList(sqlSchemaer.getRegexSql());
+        List<Map<String,Object>> noNumRegex = jdbcTemplate.queryForList(sqlSchemaer.getNoNumberRegexSql());
+//        Map<String,Object> map1 = Maps.newHashMap();
+//        map1.put("CODE","001");
+//        map1.put("GZ","/\\d{18}|\\d{17}[x|X]|\\d{15}/");
+//        map1.put("ANALYZERCLASS","cn.sinobest.traverse.analyzer.regular.SFZHRegularConvertor");
+//        Map<String,Object> map2 = Maps.newHashMap();
+//        map2.put("CODE","002");
+//        map2.put("GZ","/^\\d{9}/");
+//        Map<String,Object> map3 = Maps.newHashMap();
+//        map3.put("CODE","003");
+//        map3.put("GZ","/^\\d{17}/");
+//        List<Map<String,Object>> regex = Lists.newArrayList(map2,map3);
+//        List<Map<String,Object>> noNumRegex = Lists.newArrayList(map1);
         setPatterns(patterns,regex);
         setPatterns(noNumPatterns,noNumRegex);
 
     }
 
-    private void setPatterns(LinkedList<PatternInfo> patternsTarget,List<Map<String,Object>> regexs){
+    private void setPatterns(List<PatternInfo> patternsTarget,List<Map<String,Object>> regexs){
         for (Map map:regexs){
             Object convertorClass = map.get("ANALYZERCLASS");
             IRegularConvertor convertor = SqlUtil.getConvertor(convertorClass==null?null:convertorClass.toString());
@@ -150,17 +152,19 @@ public class RegularAnalyzer implements IAnalyzer {
     @Override
     public Set<InsertParamObject> analyzerStr(String analyzerSource, AnalyzerColumn analyzerColumn) {
         Set<InsertParamObject> paramObjects = Sets.<InsertParamObject>newHashSet();
-        LinkedList<PatternInfo> noNumPatterns = null;
-        LinkedList<PatternInfo> patterns = null;
-        //空间换时间
-        synchronized (this.noNumPatterns){
-            noNumPatterns = Lists.newLinkedList(this.noNumPatterns);
-        }
-        synchronized (this.patterns){
-            patterns = Lists.newLinkedList(this.patterns);
-        }
+//        LinkedList<PatternInfo> noNumPatterns = null;
+//        LinkedList<PatternInfo> patterns = null;
+//        //空间换时间
+//        synchronized (this.noNumPatterns){
+//            noNumPatterns = Lists.newLinkedList(this.noNumPatterns);
+//        }
+//        synchronized (this.patterns){
+//            patterns = Lists.newLinkedList(this.patterns);
+//        }
         if (StringUtil.isNotBlank(analyzerSource)){
-            for (PatternInfo patternInfo:noNumPatterns){
+//            for (PatternInfo patternInfo:noNumPatterns){
+            for (int i=0;i<noNumPatterns.size();i++){
+                PatternInfo patternInfo = noNumPatterns.get(i);
                 patternAnalyzer(paramObjects,analyzerSource,patternInfo,analyzerColumn,true);
             }
 
@@ -172,7 +176,9 @@ public class RegularAnalyzer implements IAnalyzer {
                     e2.printStackTrace();
                 }
                 for (String numSource:beforeFilter){
-                    for (PatternInfo patternInfo:patterns){
+//                    for (PatternInfo patternInfo:patterns){
+                    for (int i=0;i<patterns.size();i++){
+                        PatternInfo patternInfo = patterns.get(i);
                         patternAnalyzer(paramObjects,numSource,patternInfo,analyzerColumn,false);
                     }
                 }

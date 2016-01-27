@@ -33,21 +33,16 @@ public class TimeManager {
      *
      * @return
      */
-    public String getTimestamp() {
+    public String getTimestamp() throws Exception{
         try {
             String sql = "select to_char(decode(BACKUPTIMESTAMP,null,TIMESTAMP,BACKUPTIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') TIMESTAMP from S_TIMESTAMP where KEY=?";
-//            List list = DBUtil.queryForList(sql, new Object[]{this.TIMESTAMP_KEY_ZYAQ});
-//            if(list != null && list.size() > 0) {
-//                return ((Map)list.get(0)).get("TIMESTAMP") == null ? "" : ((Map)list.get(0)).get("TIMESTAMP").toString();
-//            }
+//            String sql = "select to_char(TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') TIMESTAMP from S_TIMESTAMP where KEY=?";
             String timestamp = jdbcTemplate.queryForObject(sql, String.class, this.TIMESTAMP_KEY_ZYAQ);
             return timestamp;
         } catch (EmptyResultDataAccessException e){
             logger.trace(TIMESTAMP_KEY_ZYAQ + "时间戳不存在将采用全量！");
-        }catch (Exception e) {
-            logger.error(TIMESTAMP_KEY_ZYAQ + "获取比对时间戳出错！",e);
+            return "";
         }
-        return "";
     }
 
     /**
@@ -55,12 +50,8 @@ public class TimeManager {
      * 基本不会出错，所以没加异常处理
      * @return
      */
-    public String getCurrentTime() {
+    public String getCurrentTime() throws Exception{
         String sql = "select to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') as CURRENTTIME from dual";
-//        List list = DBUtil.queryForList(sql, null);
-//        if(list != null && list.size() > 0) {
-//            return ((Map)list.get(0)).get("CURRENTTIME") == null ? "" : ((Map)list.get(0)).get("CURRENTTIME").toString();
-//        }
         String currentTime = jdbcTemplate.queryForObject(sql, String.class);
         return currentTime;
     }
@@ -76,6 +67,7 @@ public class TimeManager {
             jdbcTemplate.update(sql,this.TIMESTAMP_KEY_ZYAQ,currentTime,this.TIMESTAMP_COMMENT_JYAQ);
         } catch (Exception e) {
             logger.error(TIMESTAMP_KEY_ZYAQ + TIMESTAMP_COMMENT_JYAQ + "插入比对时间戳出错！", e);
+            throw e;
         }
         return currentTime;
     }
@@ -90,6 +82,7 @@ public class TimeManager {
             jdbcTemplate.update(sql,this.TIMESTAMP_KEY_ZYAQ);
         } catch (Exception e) {
             logger.error(TIMESTAMP_KEY_ZYAQ + "更新backup比对时间戳出错！", e);
+            throw e;
         }
     }
 
@@ -98,11 +91,13 @@ public class TimeManager {
      */
     public void updateTimestamp(String backupTimestamp) {
         try {
+//            String sql = "update S_TIMESTAMP set TIMESTAMP=sysdate where KEY=?";
+//            jdbcTemplate.update(sql,this.TIMESTAMP_KEY_ZYAQ);
             String sql = "update S_TIMESTAMP set TIMESTAMP=sysdate,BACKUPTIMESTAMP=to_date(?,'YYYY-MM-DD HH24:MI:SS') where KEY=?";
-//            DBUtil.update(sql, null, true, new Object[]{backupTimestamp, this.TIMESTAMP_KEY_ZYAQ});
             jdbcTemplate.update(sql,backupTimestamp,this.TIMESTAMP_KEY_ZYAQ);
         } catch (Exception e) {
             logger.error(TIMESTAMP_KEY_ZYAQ + "更新比对时间戳出错！", e);
+            throw e;
         }
     }
 

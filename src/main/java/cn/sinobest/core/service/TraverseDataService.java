@@ -66,22 +66,26 @@ public class TraverseDataService {
     public void execute(){
         try {
             String lastTime = timeManager.getTimestamp();
+//            Long start = System.currentTimeMillis();
             if(!"".equals(lastTime)) {
                 timeManager.updateTimestamp(lastTime);
                 try{
                     rowCallbackHandler.setComplete(false);
+//                    System.out.println(schemaer.getDetailSchemaer().getTraverseQuery().toString());
+//                    System.out.println(lastTime);
                     jdbcTemplate.query(schemaer.getDetailSchemaer().getTraverseQuery().toString(), new Object[]{lastTime}, rowCallbackHandler);
                 }finally {
                     timeManager.overTimestamp();
                 }
             }else{
-//                timeManager.insertTimestamp();
+                timeManager.insertTimestamp();
                 rowCallbackHandler.setComplete(true);
                 jdbcTemplate.query(schemaer.getFullSchemaer().getTraverseQuery().toString(), rowCallbackHandler);
-//                jdbcTemplate.queryForList(traverseConfigSchema.getFullQuery().toString());
             }
+//            Long end = System.currentTimeMillis()-start;
+//            System.out.println("countTime = " + end/1000);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("时间戳或运行语句出错！",e);
         }
     }
 

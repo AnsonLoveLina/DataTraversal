@@ -30,7 +30,7 @@ public class ExpressRelolverTest {
         rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？");
         ExpressRelolver relolver = new ExpressRelolver();
         AnalyzerColumn analyzerColumn = new AnalyzerColumn("lxfs");
-        analyzerColumn.setSpecialExpress("get('bshlx')=='003' && get('systemid')==3/put('rylx','05')");
+        analyzerColumn.setSpecialExpress("get('bshlx')=='003'/put('rylx','05')");
         InsertParamObject paramObject = new InsertParamObject(rowMap,analyzerColumn);
         relolver.explain(paramObject);
         System.out.println();

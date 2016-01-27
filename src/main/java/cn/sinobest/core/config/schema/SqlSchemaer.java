@@ -9,9 +9,7 @@ import cn.sinobest.traverse.io.PreparedStatementCommiter;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
 
 import javax.sql.DataSource;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by zy-xx on 16/1/24.
@@ -27,27 +25,17 @@ public class SqlSchemaer {
     private String regexSql;
     private String noNumberRegexSql;
     private String resultTable;
-    private Set<AnalyzerColumn> analyzerColumns = new HashSet<AnalyzerColumn>();
+    private List<AnalyzerColumn> analyzerColumns = new ArrayList<AnalyzerColumn>();
     private Set<String> analyzerResultColumns = new HashSet<String>();
 
     private Set<String> columns = new HashSet<String>();
     private Set<String> traverseColumns = new HashSet<String>();
     private Set<String> insertColumns = new HashSet<String>();
-    private ParsedSql insertSql;
-    private ParsedSql endUpdateSql;
 
-    private HashMap<ParsedSql,PreparedStatementCommiter> commiters = new HashMap<ParsedSql,PreparedStatementCommiter>();
+    private ResultSql insertSql;
+    private ResultSql endUpdateSql;
 
     private IAnalyzer analyzer;
-
-    public PreparedStatementCommiter getCommiter(ParsedSql sql) {
-        if (commiters.isEmpty()){
-            DataSource ds = (DataSource)SpringContextInit.getBeanByAware("dataSource");
-            PreparedStatementCommiter commiter =(PreparedStatementCommiter) SpringContextInit.getBeanByAware("commiter",ds,SqlUtil.getSubstituteNamedParameters(getInsertSql()));
-            commiters.put(getInsertSql(), commiter);
-        }
-        return commiters.get(sql);
-    }
 
     @Override
     public String toString() {
@@ -70,12 +58,19 @@ public class SqlSchemaer {
         return columns;
     }
 
-    public ParsedSql getInsertSql() {
+    public ResultSql getInsertSql() {
         if (insertSql == null && !getInsertColumns().isEmpty()){
             String insertSqlSource = SqlUtil.getInsertSql(getResultTable(),getInsertColumns());
-            this.insertSql = SqlUtil.getParsedSql(insertSqlSource);
+            this.insertSql = new ResultSql(insertSqlSource);
         }
         return insertSql;
+    }
+
+    public ResultSql getEndUpdateSql() {
+        if (endUpdateSql == null && !"".equals(getTraverseQuery().getEndUpdateSql())){
+            endUpdateSql = new ResultSql(getTraverseQuery().getEndUpdateSql());
+        }
+        return endUpdateSql;
     }
 
     public Set<String> getTraverseColumns(){
@@ -95,13 +90,6 @@ public class SqlSchemaer {
             insertColumns.remove(primaryKeyName);
         }
         return insertColumns;
-    }
-
-    public ParsedSql getEndUpdateSql() {
-        if (endUpdateSql == null && !"".equals(getTraverseQuery().getEndUpdateSql())){
-            endUpdateSql = SqlUtil.getParsedSql(getTraverseQuery().getEndUpdateSql());
-        }
-        return endUpdateSql;
     }
 
     public String getSchemaName() {
@@ -160,11 +148,11 @@ public class SqlSchemaer {
         this.resultTable = resultTable;
     }
 
-    public Set<AnalyzerColumn> getAnalyzerColumns() {
+    public List<AnalyzerColumn> getAnalyzerColumns() {
         return analyzerColumns;
     }
 
-    public void setAnalyzerColumns(Set<AnalyzerColumn> analyzerColumns) {
+    public void setAnalyzerColumns(List<AnalyzerColumn> analyzerColumns) {
         this.analyzerColumns = analyzerColumns;
     }
 
@@ -174,22 +162,6 @@ public class SqlSchemaer {
 
     public void setInsertColumns(Set<String> insertColumns) {
         this.insertColumns = insertColumns;
-    }
-
-    public void setInsertSql(ParsedSql insertSql) {
-        this.insertSql = insertSql;
-    }
-
-    public void setEndUpdateSql(ParsedSql endUpdateSql) {
-        this.endUpdateSql = endUpdateSql;
-    }
-
-    public HashMap<ParsedSql, PreparedStatementCommiter> getCommiters() {
-        return commiters;
-    }
-
-    public void setCommiters(HashMap<ParsedSql, PreparedStatementCommiter> commiters) {
-        this.commiters = commiters;
     }
 
     public void setAnalyzer(IAnalyzer analyzer) {

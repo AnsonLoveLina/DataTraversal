@@ -39,7 +39,7 @@ public class Data {
     @XmlAttribute(name = "resultTable")
     private String resultTable;
     @XmlElement(name = "analyzerColumn")
-    private Set<AnalyzerColumn> analyzerColumns = new HashSet<AnalyzerColumn>();
+    private List<AnalyzerColumn> analyzerColumns = new ArrayList<AnalyzerColumn>();
     @XmlElement(name = "analyzerResultColumn")
     private Set<String> analyzerResultColumns = new HashSet<String>();
     public Data() {
@@ -110,11 +110,11 @@ public class Data {
         this.resultTable = resultTable;
     }
 
-    public Set<AnalyzerColumn> getAnalyzerColumns() {
+    public List<AnalyzerColumn> getAnalyzerColumns() {
         return analyzerColumns;
     }
 
-    public void setAnalyzerColumns(Set<AnalyzerColumn> analyzerColumns) {
+    public void setAnalyzerColumns(List<AnalyzerColumn> analyzerColumns) {
         this.analyzerColumns = analyzerColumns;
     }
 

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <datas>
-    <!--并发needCheck可能会影响性能-->
     <!--
     对查询语句进行解析，得到对应字段数组
     SYSTEMID字段将直接删除
@@ -15,7 +14,7 @@
         <fullQuery concurrentNum="20" endUpdateSql="" >
             select /*+rule*/'ry' as zymc,x.rylx as rylx,r.ajbh as ajbh,(select ajmc from b_asj_aj z where z.ajbh = r.ajbh) as ajmc,(select systemid from b_asj_aj z where z.ajbh = r.ajbh) as ajid,r.systemid as systemid,x.zjhm as zjhm,x.LXDH as lxfs from b_asj_baszqt x,b_asj_rysaqk r where r.rybh = x.systemid
         </fullQuery>
-        <analyzerColumn specialExpress="get('bshlx')=='003'/put('rylx','05')">ZJHM</analyzerColumn>
+        <analyzerColumn specialExpress="get('bshlx')=='005'/put('rylx','05')">ZJHM</analyzerColumn>
         <analyzerColumn>LXFS</analyzerColumn>
         <analyzerResultColumn>BSHID</analyzerResultColumn>
         <analyzerResultColumn>BSHLX</analyzerResultColumn>
@@ -49,7 +48,7 @@
         <detailQuery endUpdateSql="" >
             select 'zaj' as zymc,(select RESERVATION07 from b_asj_jq j where j.ajbh = t.ajbh and rownum=1) jqms,(select body from b_asj_bl b where b.ajbh = t.ajbh and rownum=1) blxx,systemid as ajid,zyaq,ajbh,ajmc,'99' rylx from B_ASJ_AJ t where t.ajbh is not null and t.LASTUPDATEDTIME>=to_date(?,'YYYY-MM-DD HH24:MI:SS') and LASTUPDATEDTIME is not null
         </detailQuery>
-        <fullQuery concurrentNum="20" endUpdateSql="" >
+        <fullQuery concurrentNum="80" endUpdateSql="" >
             select 'zaj' as zymc,(select RESERVATION07 from b_asj_jq j where j.ajbh = t.ajbh and rownum=1) jqms,(select body from b_asj_bl b where b.ajbh = t.ajbh and rownum=1) blxx,systemid as ajid,zyaq,ajbh,ajmc,'99' rylx from B_ASJ_AJ t
         </fullQuery>
         <analyzerColumn>JQMS</analyzerColumn>

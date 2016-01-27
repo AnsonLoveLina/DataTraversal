@@ -3,6 +3,8 @@ package cn.sinobest.job;
 import cn.sinobest.core.common.init.SpringContextInit;
 import cn.sinobest.core.config.po.TraverseConfigSchema;
 import cn.sinobest.core.config.po.TraverseConfigSchemaFactory;
+import cn.sinobest.core.config.schema.Schemaer;
+import cn.sinobest.core.config.schema.SchemaerFactory;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
 import cn.sinobest.core.service.TraverseDataService;
 import com.google.common.base.Preconditions;
@@ -26,13 +28,13 @@ public class TraverseJob {
 
     public void init(){
         for (String serviceName:serviceNames) {
-            TraverseConfigSchema schema = TraverseConfigSchemaFactory.getSchema(serviceName);
+            Schemaer schemaer = SchemaerFactory.getSchema(serviceName);
             try {
                 //为了不多写工厂奇懒无比
-                IRowAnalyzerCallBackHandler callBackHandler = (IRowAnalyzerCallBackHandler) SpringContextInit.getContext().getBean(callBackHandlerBeanName, schema);
+                IRowAnalyzerCallBackHandler callBackHandler = (IRowAnalyzerCallBackHandler) SpringContextInit.getContext().getBean(callBackHandlerBeanName, schemaer);
 
                 //为了不多写工厂奇懒无比
-                TraverseDataService traverseDataService = (TraverseDataService) SpringContextInit.getContext().getBean("traverseDataService",schema,callBackHandler);
+                TraverseDataService traverseDataService = (TraverseDataService) SpringContextInit.getContext().getBean("traverseDataService",schemaer,callBackHandler);
                 services.add(traverseDataService);
             }catch (ClassCastException e){
                 logger.error(callBackHandlerBeanName+"不属于IRowAnalyzerCallBackHandler的实现！\n"+e.getMessage(),e);

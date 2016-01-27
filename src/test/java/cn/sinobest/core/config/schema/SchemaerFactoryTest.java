@@ -1,5 +1,6 @@
 package cn.sinobest.core.config.schema;
 
+import cn.sinobest.core.common.util.PrintUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
@@ -46,29 +47,13 @@ public class SchemaerFactoryTest {
         rowMap.put("ajmc","mcsdfds");
         rowMap.put("ajbh","234234");
         rowMap.put("zjhm","43010219870402051x");
-        rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？");
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
+        rowMap.put("lxfs","2014年6月10日，杨少婷报案，遭入室盗窃笔记本电脑一台，现金8000多元");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();
         RowAnalyzerCallBackHandlerImpl callBackHandler = (RowAnalyzerCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler", schemaer);
-        Set<InsertParamObject> paramObjectSet = callBackHandler.analyzerRowMap(rowMap,sqlSchemaer.getAnalyzer(),sqlSchemaer.getAnalyzerColumns());
-        printParamObjectSet(paramObjectSet);
-    }
-
-    public static void printParamObjectSet(Set<InsertParamObject> paramObjectSet){
-        for (InsertParamObject paramObject:paramObjectSet){
-            System.out.println("\nparamObject = " + paramObject);
-            for (Map.Entry<String,String> entry:paramObject.getParamMap().entrySet()){
-                System.out.println(entry.getKey() + " = " + entry.getValue());
-            }
-            System.out.print("analyzerColumn ：");
-            for (AnalyzerColumn analyzerColumn:paramObject.getAnalyzerColumns()){
-                System.out.print(analyzerColumn.toString()+"，");
-            }
-            System.out.println("");
-        }
-
+        callBackHandler.analyzerRowMap(rowMap,sqlSchemaer.getAnalyzer(),sqlSchemaer.getAnalyzerColumns());
     }
 
 //    @Test
@@ -85,7 +70,7 @@ public class SchemaerFactoryTest {
         sqlSchemaer.getEndUpdateSql();
         IAnalyzer analyzer = (IAnalyzer) applicationContext.getBean("regularAnalyzer",sqlSchemaer);
         Set<InsertParamObject> paramObjectSet = analyzer.analyzerStr("周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？", new AnalyzerColumn("ZJHM"));
-        printParamObjectSet(paramObjectSet);
+        PrintUtil.printParamObjectSet(paramObjectSet);
 //        Executor executor = Executors.newCachedThreadPool();
 //        for (int i=0;i<999999;i++){
 //            TaskRun taskRun = new TaskRun(analyzer);
