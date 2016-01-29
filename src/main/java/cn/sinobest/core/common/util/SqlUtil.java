@@ -21,7 +21,7 @@ import java.io.Reader;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 /**
@@ -104,20 +104,53 @@ public class SqlUtil {
     }
 
     //初始化一个64的缓存
-    private final static ConcurrentHashMap<String, ParsedSql> parsedSqlCache = new ConcurrentHashMap<String, ParsedSql>(64);
+    private final static ConcurrentHashMap<String, Future> parsedSqlCache = new ConcurrentHashMap<String, Future>(64);
 
-    public static ParsedSql getParsedSql(String sql) {
-//        synchronized (this.parsedSqlCache) {
-        if (StringUtil.isBlank(sql))
+    /**
+     * 经过改造之后可以适应NamedParameterUtils.parseSqlStatement(sql)较慢的情况
+     * 并且如果在加入过程中出现并发也能避免
+     * 对于执行过程中的异常处理暂时没有很好的想法就先null
+     * @param sql
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    public static ParsedSql getParsedSql(final String sql) {
+        if (StringUtil.isBlank(sql)){
             return null;
-        ParsedSql parsedSql = (ParsedSql) parsedSqlCache.get(sql);
-        if (parsedSql == null) {
-            parsedSql = NamedParameterUtils.parseSqlStatement(sql);
-            parsedSqlCache.put(sql, parsedSql);
         }
-
-        return parsedSql;
+        Future<ParsedSql> future = parsedSqlCache.get(sql);
+        if (future==null){
+            Callable<ParsedSql> parsedSqlCallable = new Callable<ParsedSql>() {
+                @Override
+                public ParsedSql call() throws Exception {
+                    return NamedParameterUtils.parseSqlStatement(sql);
+                }
+            };
+            FutureTask<ParsedSql> futureTask = new FutureTask<ParsedSql>(parsedSqlCallable);
+            future = parsedSqlCache.putIfAbsent(sql, futureTask);
+            if (future==null){
+                future = futureTask;
+                futureTask.run();
+            }
+        }
+        try {
+            return future.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return null;
+        }
+//        并发不够严谨
+//        ParsedSql parsedSql = (ParsedSql) parsedSqlCache.get(sql);
+//        if (parsedSql == null) {
+//            parsedSql = NamedParameterUtils.parseSqlStatement(sql);
+//            parsedSqlCache.put(sql, parsedSql);
 //        }
+
+//        return parsedSql;
     }
 
     public static String getSubstituteNamedParameters(ParsedSql sql){
