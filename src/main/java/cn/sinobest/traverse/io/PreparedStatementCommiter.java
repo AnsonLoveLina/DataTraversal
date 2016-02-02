@@ -61,7 +61,13 @@ public class PreparedStatementCommiter implements IBatchCommiter {
             }
             ps.addBatch();
         } catch (SQLException e) {
-            logger.error("ps.setObject error!",e);
+            logger.error("ps.setObject error!", e);
+        }
+        int countInt = count.incrementAndGet();
+        if (countInt>10000){
+            synchronized (this){
+                executeAndCommit();
+            }
         }
     }
 
@@ -69,14 +75,15 @@ public class PreparedStatementCommiter implements IBatchCommiter {
 
     public void executeAndCommit() {
 //        logger.info("当前占用链接："+sqlPs.size());
-        synchronized (this) {
+//        synchronized (this) {
             logger.info("当前" + count.get());
             try {
                 ps.executeBatch();
+                ps.isCloseOnCompletion();
                 conn.commit();
             } catch (SQLException e) {
                 logger.error("commit error!",e);
             }
-        }
+//        }
     }
 }

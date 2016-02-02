@@ -5,4 +5,5 @@ package cn.sinobest.traverse.io;
  */
 public interface IBatchCommiter {
     public void setObjects(Object... params);
+    public void executeAndCommit();
 }

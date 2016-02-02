@@ -12,8 +12,10 @@ import jodd.util.StringUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -29,6 +31,11 @@ import java.util.regex.Pattern;
  */
 public class SqlUtil {
     private static final Log logger = LogFactory.getLog(SqlUtil.class);
+
+    public static Object[] getParam(ParsedSql parsedSql,Map<String,String> paramMap){
+        Object[] params = NamedParameterUtils.buildValueArray(parsedSql, new MapSqlParameterSource(paramMap), (List)null);
+        return params;
+    }
 
     public static IRegularConvertor getConvertor(String className){
         IRegularConvertor convertor;

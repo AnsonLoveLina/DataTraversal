@@ -48,7 +48,7 @@ public class SchemaerFactoryTest {
         rowMap.put("ajbh","234234");
         rowMap.put("zjhm","43010219870402051x");
         rowMap.put("lxfs","2014年6月10日，杨少婷报案，遭入室盗窃笔记本电脑一台，现金8000多元");
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();

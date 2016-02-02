@@ -6,6 +6,7 @@ import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.po.ITraverseQuery;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.io.PreparedStatementCommiter;
+import jodd.util.StringUtil;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
 
 import javax.sql.DataSource;
@@ -67,7 +68,7 @@ public class SqlSchemaer {
     }
 
     public ResultSql getEndUpdateSql() {
-        if (endUpdateSql == null && !"".equals(getTraverseQuery().getEndUpdateSql())){
+        if (endUpdateSql == null && StringUtil.isNotBlank(getTraverseQuery().getEndUpdateSql())){
             endUpdateSql = new ResultSql(getTraverseQuery().getEndUpdateSql());
         }
         return endUpdateSql;

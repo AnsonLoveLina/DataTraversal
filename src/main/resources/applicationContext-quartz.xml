@@ -5,19 +5,13 @@
 
     <task:annotation-driven /> <!-- 定时器开关-->
 
-    <bean id="job" class="cn.sinobest.job.TraverseJob" init-method="init">
+    <bean id="ryTraverseJob" class="cn.sinobest.job.RYTraverseJob" init-method="init">
         <property name="callBackHandlerBeanName" value="analyzerCallBackHandler"/>
-        <property name="serviceNames">
-            <set value-type="java.lang.String">
-                <!--<value>B_ASJ_ZAJ_RY</value>-->
-                <value>B_ASJ_ZAJ_TEMP</value>
-            </set>
-        </property>
+        <property name="serviceName" value="B_ASJ_ZAJ_TEMP" />
     </bean>
 
     <task:scheduled-tasks>
-        <task:scheduled ref="job" method="execute" fixed-delay="30000"/>
-        <!--<task:scheduled ref="commiter" method="executeAndCommit" fixed-delay="100"/>-->
+        <task:scheduled ref="ryTraverseJob" method="execute" fixed-delay="30000"/>
     </task:scheduled-tasks>
 
 

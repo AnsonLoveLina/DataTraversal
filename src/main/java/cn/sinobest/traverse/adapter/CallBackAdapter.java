@@ -79,7 +79,7 @@ public class CallBackAdapter {
             }
 
             ps.addBatch();
-            commiter.addBatch(processResultSql);
+//            commiter.addBatch(processResultSql);
         }
     }
 }

@@ -15,7 +15,7 @@ public class ResultSql {
 
     public ResultSql(String resultSqlStr) {
         this.resultSql = SqlUtil.getParsedSql(resultSqlStr);
-        resultSqlCommiter = (IBatchCommiter) SpringContextInit.getBeanByAware("preparedStatementCommiter",this.resultSql);
+        resultSqlCommiter = (IBatchCommiter) SpringContextInit.getBeanByAware("futurePreparedStatementCommiter",this.resultSql);
     }
 
     public ParsedSql getResultSql() {

@@ -1,6 +1,7 @@
 package cn.sinobest.traverse.handler;
 
 import cn.sinobest.core.common.util.PrintUtil;
+import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.schema.ResultSql;
 import cn.sinobest.core.config.schema.Schemaer;
@@ -152,22 +153,22 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
 
     private void processBiz(ResultSql insertSql, ResultSql endUpdateSql, Set<InsertParamObject> paramSet) {
         Preconditions.checkNotNull(insertSql);
-        IBatchCommiter commiter = insertSql.getResultSqlCommiter();
+        IBatchCommiter insertCommiter = insertSql.getResultSqlCommiter();
         for (InsertParamObject paramObject:paramSet){
             Map<String,String> param = paramObject.getParamMap();
-            for (String value:param.values()){
-//                commiter.setObjects(entry.);
-            }
+            Object[] params = SqlUtil.getParam(insertSql.getResultSql(),param);
+            insertCommiter.setObjects(params);
         }
-//        PreparedStatementCommiter commiter = null;
-//        try {
-//            adapter.processResult(insertSql, paramMap,commiter);
-//            if (endUpdateSql!=null){
-//                adapter.processResult(endUpdateSql, paramMap,commiter);
-//            }
-//        } catch (Exception e) {
-//            logger.error("结果语句preparedStatement！",e);
-//        }
+//        insertCommiter.executeAndCommit();
+        if (endUpdateSql.getResultSql()!=null){
+            IBatchCommiter endUpdateCommiter = endUpdateSql.getResultSqlCommiter();
+            for (InsertParamObject paramObject:paramSet){
+                Map<String,String> param = paramObject.getParamMap();
+                Object[] params = SqlUtil.getParam(endUpdateSql.getResultSql(),param);
+                endUpdateCommiter.setObjects(params);
+            }
+//            endUpdateCommiter.executeAndCommit();
+        }
 
     }
 
