@@ -67,5 +67,6 @@
               <property name="dataSource" ref="dataSource" />
        </bean>
 
-       <import resource="applicationContext-quartz.xml"/>
+       <import resource="applicationContext-task.xml"/>
+       <import resource="applicationContext-jms.xml"/>
 </beans>

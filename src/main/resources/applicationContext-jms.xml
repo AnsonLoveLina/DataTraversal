@@ -16,7 +16,6 @@
        <!-- JMS ConnectionFactory to use, configuring the embedded broker using XML -->
        <amq:connectionFactory id="jmsFactory" brokerURL="vm://localhost"/>
 
-
        <!-- Spring JMS Template -->
        <bean id="myJmsTemplate" class="org.springframework.jms.core.JmsTemplate">
               <property name="connectionFactory">
@@ -36,7 +35,7 @@
        <!-- a sample POJO which uses a Spring JmsTemplate -->
        <bean id="producer" class="cn.sinobest.traverse.queue.ProducerService">
               <property name="template">
-                     <ref bean="myJmsTemplate"></ref>
+                     <ref bean="myJmsTemplate"/>
               </property>
 
               <property name="destination">
