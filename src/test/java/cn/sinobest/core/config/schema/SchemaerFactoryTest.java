@@ -6,17 +6,11 @@ import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
 import cn.sinobest.traverse.po.InsertParamObject;
 import com.google.common.collect.Maps;
-import jodd.util.StringUtil;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by zy-xx on 16/1/24.
@@ -48,11 +42,12 @@ public class SchemaerFactoryTest {
         rowMap.put("ajbh","234234");
         rowMap.put("zjhm","43010219870402051x");
         rowMap.put("lxfs","2014年6月10日，杨少婷报案，遭入室盗窃笔记本电脑一台，现金8000多元");
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();
-        RowAnalyzerCallBackHandlerImpl callBackHandler = (RowAnalyzerCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler", schemaer);
+        RowAnalyzerCallBackHandlerImpl callBackHandler = (RowAnalyzerCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler");
+        callBackHandler.setComplete(true,schemaer);
         callBackHandler.analyzerRowMap(rowMap,sqlSchemaer.getAnalyzer(),sqlSchemaer.getAnalyzerColumns());
     }
 

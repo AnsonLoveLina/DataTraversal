@@ -112,7 +112,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         @Override
         public void run() {
             Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps, analyzer, analyzerColumns);
-            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
+//            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
         }
     }
 

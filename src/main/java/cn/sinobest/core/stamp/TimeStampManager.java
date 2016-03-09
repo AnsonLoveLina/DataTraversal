@@ -135,10 +135,10 @@ public class TimeStampManager implements StampManager {
         try {
             lastTime = getTimestamp();
         } catch (Exception e) {
-            logger.trace(TIMESTAMP_KEY + "时间戳不存在将采用全量！");
-            return false;
+            logger.info(TIMESTAMP_KEY + "时间戳不存在将采用全量！");
+            return true;
         }
-        return true;
+        return false;
     }
 
     @Override

@@ -36,7 +36,7 @@ public class TraverseJob {
     }
 
     public void execute(){
-        logger.trace("任务运行开始！");
+        logger.info("任务运行开始！");
         traverseDataService.execute();
     }
 
