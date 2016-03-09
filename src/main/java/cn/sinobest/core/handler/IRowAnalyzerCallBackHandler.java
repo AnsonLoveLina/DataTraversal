@@ -7,6 +7,5 @@ import org.springframework.jdbc.core.RowCallbackHandler;
  * Created by zhouyi1 on 2016/1/19 0019.
  */
 public interface IRowAnalyzerCallBackHandler extends RowCallbackHandler {
-    public void init(Schemaer schemaer);
-    public void setComplete(boolean isComplete);
+    public void setComplete(boolean isComplete,Schemaer schemaer);
 }

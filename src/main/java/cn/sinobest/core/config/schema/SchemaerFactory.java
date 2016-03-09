@@ -27,12 +27,12 @@ public class SchemaerFactory {
 
             Resource resource = WebResourceLoaderAware.getLoader().getResource("classpath:traverseConfig.xml");
             InputStream is = resource.getInputStream();
-            logger.trace("成功获取资源！");
+            logger.info("成功获取资源！");
 
             JAXBContext jaxbContext = JAXBContext.newInstance(Datas.class);
             Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
             Datas datas = (Datas) jaxbUnmarshaller.unmarshal(is);
-            logger.trace("成功装载资源！");
+            logger.info("成功装载资源！");
 
             for (Data data:datas.getData()){
                 Schemaer schemaer = new Schemaer(data);

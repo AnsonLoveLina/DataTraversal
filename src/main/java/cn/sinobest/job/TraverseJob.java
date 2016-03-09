@@ -26,7 +26,7 @@ public class TraverseJob {
 //            try {
                 //为了不多写工厂奇懒无比
 //                IRowAnalyzerCallBackHandler callBackHandler = (IRowAnalyzerCallBackHandler) SpringContextInit.getContext().getBean(callBackHandlerBeanName);
-                callBackHandler.init(schemaer);
+//                callBackHandler.init(schemaer);
 
                 traverseDataService = (TraverseDataService) SpringContextInit.getContext().getBean("traverseDataService",schemaer,callBackHandler);
 //            }catch (ClassCastException e){

@@ -45,20 +45,14 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     @Resource(name = "expressRelolver")
     IExpressRelolver relolver;
 
-    private Schemaer schemaer;
-
     private SqlSchemaer sqlSchemaer;
 
     private int concurrentNum;
 
-    @Override
-    public void init(Schemaer schemaer) {
-        Preconditions.checkNotNull(schemaer);
-        this.schemaer = schemaer;
-    }
 
     @Override
-    public void setComplete(boolean isComplete) {
+    public void setComplete(boolean isComplete,Schemaer schemaer) {
+        Preconditions.checkNotNull(schemaer);
         //spring初始化的情况
         if (schemaer == null)
             return;

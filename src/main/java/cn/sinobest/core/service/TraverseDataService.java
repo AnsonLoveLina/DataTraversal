@@ -56,22 +56,20 @@ public class TraverseDataService {
             if(!timeStampManager.isComplete()) {
                 timeStampManager.incrementBefore();
                 try{
-                    rowCallbackHandler.setComplete(false);
-//                    System.out.println(schemaer.getDetailSchemaer().getTraverseQuery().toString());
-//                    System.out.println(lastTime);
+                    rowCallbackHandler.setComplete(false,schemaer);
                     jdbcTemplate.query(schemaer.getDetailSchemaer().getTraverseQuery().toString(), new Object[]{timeStampManager.getIncrementIdenti()}, rowCallbackHandler);
                 }finally {
                     timeStampManager.incrementFinally();
                 }
             }else{
                 timeStampManager.completeBefore();
-                rowCallbackHandler.setComplete(true);
+                rowCallbackHandler.setComplete(true,schemaer);
                 jdbcTemplate.query(schemaer.getFullSchemaer().getTraverseQuery().toString(), rowCallbackHandler);
             }
 //            Long end = System.currentTimeMillis()-start;
 //            System.out.println("countTime = " + end/1000);
         } catch (Exception e) {
-            logger.error("时间戳或运行语句出错！",e);
+            logger.error("运行语句出错！",e);
         }
     }
 
