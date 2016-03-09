@@ -1,48 +1,43 @@
-package cn.sinobest.core;
+package cn.sinobest.core.stamp;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by zhouyi1 on 2016/1/19 0019.
  */
 @Component
-public class TimeManager {
-    private static final Log logger = LogFactory.getLog(TimeManager.class);
+@Scope(value = "prototype")
+public class TimeStampManager implements StampManager {
+    private static final Log logger = LogFactory.getLog(TimeStampManager.class);
 
-    private String TIMESTAMP_COMMENT_JYAQ = "主要案情标识号分词时间戳";
-    private String TIMESTAMP_KEY_ZYAQ = "AJJQ.ZYAQ";
+    private String TIMESTAMP_COMMENT = "默认时间戳";
+    private String TIMESTAMP_KEY = "DefaultKey";
 
     @Resource(name = "jdbcTemplate")
     private JdbcTemplate jdbcTemplate;
-
-    public void init(String TIMESTAMP_COMMENT_JYAQ, String TIMESTAMP_KEY_ZYAQ) {
-        this.TIMESTAMP_COMMENT_JYAQ = TIMESTAMP_COMMENT_JYAQ;
-        this.TIMESTAMP_KEY_ZYAQ = TIMESTAMP_KEY_ZYAQ;
-    }
 
     /**
      * 获取比对时间戳
      *
      * @return
      */
-    public String getTimestamp() throws Exception{
-        try {
+    private String getTimestamp() throws EmptyResultDataAccessException{
+//        try {
             String sql = "select to_char(decode(BACKUPTIMESTAMP,null,TIMESTAMP,BACKUPTIMESTAMP), 'YYYY-MM-DD HH24:MI:SS') TIMESTAMP from S_TIMESTAMP where KEY=?";
 //            String sql = "select to_char(TIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') TIMESTAMP from S_TIMESTAMP where KEY=?";
-            String timestamp = jdbcTemplate.queryForObject(sql, String.class, this.TIMESTAMP_KEY_ZYAQ);
+            String timestamp = jdbcTemplate.queryForObject(sql, String.class, this.TIMESTAMP_KEY);
             return timestamp;
-        } catch (EmptyResultDataAccessException e){
-            logger.trace(TIMESTAMP_KEY_ZYAQ + "时间戳不存在将采用全量！");
-            return "";
-        }
+//        } catch (EmptyResultDataAccessException e){
+//            logger.trace(TIMESTAMP_KEY + "时间戳不存在将采用全量！");
+//            return "";
+//        }
     }
 
     /**
@@ -50,7 +45,7 @@ public class TimeManager {
      * 基本不会出错，所以没加异常处理
      * @return
      */
-    public String getCurrentTime() throws Exception{
+    private String getCurrentTime() throws Exception{
         String sql = "select to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') as CURRENTTIME from dual";
         String currentTime = jdbcTemplate.queryForObject(sql, String.class);
         return currentTime;
@@ -59,17 +54,17 @@ public class TimeManager {
     /**
      * 插入比对时间戳
      */
-    public String insertTimestamp() throws Exception {
+    public void insertTimestamp() throws Exception {
         String currentTime = getCurrentTime();
         try {
             String sql = "insert into S_TIMESTAMP (KEY,TIMESTAMP,COMMENTS) values (?,to_date(?,'YYYY-MM-DD HH24:MI:SS'),?)";
-//            DBUtil.update(sql, null, true, new Object[]{this.TIMESTAMP_KEY_ZYAQ, currentTime, this.TIMESTAMP_COMMENT_JYAQ});
-            jdbcTemplate.update(sql,this.TIMESTAMP_KEY_ZYAQ,currentTime,this.TIMESTAMP_COMMENT_JYAQ);
+//            DBUtil.update(sql, null, true, new Object[]{this.TIMESTAMP_KEY, currentTime, this.TIMESTAMP_COMMENT});
+            jdbcTemplate.update(sql,this.TIMESTAMP_KEY,currentTime,this.TIMESTAMP_COMMENT);
         } catch (Exception e) {
-            logger.error(TIMESTAMP_KEY_ZYAQ + TIMESTAMP_COMMENT_JYAQ + "插入比对时间戳出错！", e);
+            logger.error(TIMESTAMP_KEY + TIMESTAMP_COMMENT + "插入比对时间戳出错！", e);
             throw e;
         }
-        return currentTime;
+//        return currentTime;
     }
 
     /**
@@ -78,10 +73,10 @@ public class TimeManager {
     public void overTimestamp() {
         try {
             String sql = "update S_TIMESTAMP set BACKUPTIMESTAMP=null where KEY=?";
-//            DBUtil.update(sql, null, true, new Object[]{this.TIMESTAMP_KEY_ZYAQ});
-            jdbcTemplate.update(sql,this.TIMESTAMP_KEY_ZYAQ);
+//            DBUtil.update(sql, null, true, new Object[]{this.TIMESTAMP_KEY});
+            jdbcTemplate.update(sql,this.TIMESTAMP_KEY);
         } catch (Exception e) {
-            logger.error(TIMESTAMP_KEY_ZYAQ + "更新backup比对时间戳出错！", e);
+            logger.error(TIMESTAMP_KEY + "更新backup比对时间戳出错！", e);
             throw e;
         }
     }
@@ -92,11 +87,11 @@ public class TimeManager {
     public void updateTimestamp(String backupTimestamp) {
         try {
 //            String sql = "update S_TIMESTAMP set TIMESTAMP=sysdate where KEY=?";
-//            jdbcTemplate.update(sql,this.TIMESTAMP_KEY_ZYAQ);
+//            jdbcTemplate.update(sql,this.TIMESTAMP_KEY);
             String sql = "update S_TIMESTAMP set TIMESTAMP=sysdate,BACKUPTIMESTAMP=to_date(?,'YYYY-MM-DD HH24:MI:SS') where KEY=?";
-            jdbcTemplate.update(sql,backupTimestamp,this.TIMESTAMP_KEY_ZYAQ);
+            jdbcTemplate.update(sql,backupTimestamp,this.TIMESTAMP_KEY);
         } catch (Exception e) {
-            logger.error(TIMESTAMP_KEY_ZYAQ + "更新比对时间戳出错！", e);
+            logger.error(TIMESTAMP_KEY + "更新比对时间戳出错！", e);
             throw e;
         }
     }
@@ -107,7 +102,7 @@ public class TimeManager {
      *
      * @return
      */
-    public String getSysid() {
+    private String getSysid() {
         try {
             String sql = "select getid('') ID from dual";
 //            List list = DBUtil.queryForList(sql, null);
@@ -120,5 +115,48 @@ public class TimeManager {
             logger.error("获取唯一ID出错！", e);
         }
         return "";
+    }
+
+    private String lastTime = "";
+
+    @Override
+    public void init(String TIMESTAMP_COMMENT, String TIMESTAMP_KEY) {
+        this.TIMESTAMP_COMMENT = TIMESTAMP_COMMENT;
+        this.TIMESTAMP_KEY = TIMESTAMP_KEY;
+    }
+
+    @Override
+    public Object getIncrementIdenti(){
+        return lastTime;
+    }
+
+    @Override
+    public boolean isComplete() {
+        try {
+            lastTime = getTimestamp();
+        } catch (Exception e) {
+            logger.trace(TIMESTAMP_KEY + "时间戳不存在将采用全量！");
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public void incrementBefore() {
+        updateTimestamp(lastTime);
+    }
+
+    @Override
+    public void incrementFinally() {
+        overTimestamp();
+    }
+
+    @Override
+    public void completeBefore() {
+        try {
+            insertTimestamp();
+        } catch (Exception e) {
+            logger.error("时间戳或运行语句出错！", e);
+        }
     }
 }

@@ -7,38 +7,28 @@ import cn.sinobest.core.config.schema.ResultSql;
 import cn.sinobest.core.config.schema.Schemaer;
 import cn.sinobest.core.config.schema.SqlSchemaer;
 import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
-import cn.sinobest.traverse.adapter.CallBackAdapter;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
-import cn.sinobest.traverse.analyzer.StringAnalyzer;
 import cn.sinobest.traverse.io.IBatchCommiter;
-import cn.sinobest.traverse.io.PreparedStatementCommiter;
 import cn.sinobest.traverse.po.InsertParamObject;
 import cn.sinobest.traverse.relolver.IExpressRelolver;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import jodd.typeconverter.Convert;
-import jodd.util.CollectionUtil;
-import org.apache.commons.collections.SetUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
-import org.springframework.jdbc.core.namedparam.ParsedSql;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -62,6 +52,12 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
     private int concurrentNum;
 
     @Override
+    public void init(Schemaer schemaer) {
+        Preconditions.checkNotNull(schemaer);
+        this.schemaer = schemaer;
+    }
+
+    @Override
     public void setComplete(boolean isComplete) {
         //spring初始化的情况
         if (schemaer == null)
@@ -78,10 +74,10 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         }
     }
 
-    public RowAnalyzerCallBackHandlerImpl(Schemaer schemaer) {
-        Preconditions.checkNotNull(schemaer);
-        this.schemaer = schemaer;
-    }
+//    public RowAnalyzerCallBackHandlerImpl(Schemaer schemaer) {
+//        Preconditions.checkNotNull(schemaer);
+//        this.schemaer = schemaer;
+//    }
 
     public void initExecutor(int concurrentNum) {
         //目前先采用队列作为缓冲区，提高安全性和吞吐
@@ -90,11 +86,6 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
                 0L, TimeUnit.MILLISECONDS,
                 queue, blockingPolicy);
         executor.set(taskServcie);
-    }
-
-    //    @PostConstruct
-    public void init() {
-
     }
 
     RejectedExecutionHandler blockingPolicy = new RejectedExecutionHandler() {

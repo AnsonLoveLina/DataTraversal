@@ -3,11 +3,7 @@ package cn.sinobest.core.config.schema;
 import cn.sinobest.core.common.init.WebResourceLoaderAware;
 import cn.sinobest.core.config.po.Data;
 import cn.sinobest.core.config.po.Datas;
-import cn.sinobest.core.config.po.TraverseConfigSchema;
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import jodd.bean.BeanTool;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.Resource;
@@ -15,9 +11,7 @@ import org.springframework.core.io.Resource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by zy-xx on 16/1/24.
@@ -42,7 +36,7 @@ public class SchemaerFactory {
 
             for (Data data:datas.getData()){
                 Schemaer schemaer = new Schemaer(data);
-                schemas.put(data.getSchemaName(),schemaer);
+                schemas.put(data.getSchemaName(), schemaer);
             }
         }catch (Exception e){
             logger.error(e.getMessage(),e);
