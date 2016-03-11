@@ -7,7 +7,7 @@ public interface StampManager {
     public void init(String TIMESTAMP_COMMENT, String TIMESTAMP_KEY);
     public Object getIncrementIdenti();
     public boolean isComplete();
-    public void incrementBefore();
-    public void incrementFinally();
-    public void completeBefore();
+    public void increment();
+//    public void incrementFinally();
+    public void complete();
 }

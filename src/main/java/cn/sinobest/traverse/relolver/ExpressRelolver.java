@@ -12,7 +12,6 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,16 +41,21 @@ public class ExpressRelolver implements IExpressRelolver{
             }
             String[] expressAndResult = StringUtil.split(specialExpress,"/");
             String express = expressAndResult[0];
-            String result = expressAndResult[1];
+            String resultStr = expressAndResult[1];
             EvaluationContext context = new StandardEvaluationContext(param);
             ExpressionParser parser = new SpelExpressionParser();
             try{
                 boolean passed = parser.parseExpression(express).getValue(context,boolean.class);
                 if (passed){
-                    parser.parseExpression(result).getValue(context);
+                    String[] results = resultStr.split(";");
+                    for (int i=0;i<results.length;i++){
+                        if(results[i]!=null && !"".equals(results[i])){
+                            parser.parseExpression(results[i]).getValue(context);
+                        }
+                    }
                 }
             }catch (SpelEvaluationException e){
-                logger.error(express+" or "+result+" is error!",e);
+                logger.error(express+" or "+resultStr+" is error!",e);
             }
         }
 

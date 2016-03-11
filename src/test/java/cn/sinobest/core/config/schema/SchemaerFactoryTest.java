@@ -3,7 +3,7 @@ package cn.sinobest.core.config.schema;
 import cn.sinobest.core.common.util.PrintUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
-import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
+import cn.sinobest.traverse.handler.RowCallBackHandlerImpl;
 import cn.sinobest.traverse.po.InsertParamObject;
 import com.google.common.collect.Maps;
 import org.junit.Test;
@@ -40,14 +40,13 @@ public class SchemaerFactoryTest {
         rowMap.put("ajid","pcs234234234");
         rowMap.put("ajmc","mcsdfds");
         rowMap.put("ajbh","234234");
-        rowMap.put("zjhm","43010219870402051x");
-        rowMap.put("lxfs","2014年6月10日，杨少婷报案，遭入室盗窃笔记本电脑一台，现金8000多元");
+        rowMap.put("blxx","43010219870402051x");
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
         applicationContext.start();
-        Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
+        Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_TEMP");
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();
-        RowAnalyzerCallBackHandlerImpl callBackHandler = (RowAnalyzerCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler");
-        callBackHandler.setComplete(true,schemaer);
+        RowCallBackHandlerImpl callBackHandler = (RowCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler");
+        callBackHandler.initCallBackHandler(true, schemaer);
         callBackHandler.analyzerRowMap(rowMap,sqlSchemaer.getAnalyzer(),sqlSchemaer.getAnalyzerColumns());
     }
 
@@ -56,7 +55,7 @@ public class SchemaerFactoryTest {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
         applicationContext.start();
         Schemaer schemaer = SchemaerFactory.getSchema("B_ASJ_ZAJ_RY");
-        RowAnalyzerCallBackHandlerImpl callBackHandler = (RowAnalyzerCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler", schemaer);
+        RowCallBackHandlerImpl callBackHandler = (RowCallBackHandlerImpl) applicationContext.getBean("analyzerCallBackHandler", schemaer);
         SqlSchemaer sqlSchemaer = schemaer.getFullSchemaer();
         sqlSchemaer.getColumns();
         sqlSchemaer.getInsertSql();

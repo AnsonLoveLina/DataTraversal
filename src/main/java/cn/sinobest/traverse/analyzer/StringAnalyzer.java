@@ -6,15 +6,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by zy-xx on 16/1/21.
  */
 @Component
+@Deprecated
 public class StringAnalyzer {
     private static final Log logger = LogFactory.getLog(StringAnalyzer.class);
 

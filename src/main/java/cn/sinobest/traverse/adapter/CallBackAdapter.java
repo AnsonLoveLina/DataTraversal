@@ -4,9 +4,7 @@ import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.traverse.analyzer.StringAnalyzer;
 import cn.sinobest.traverse.io.PreparedStatementCommiter;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import oracle.sql.CLOB;
 import org.apache.commons.logging.Log;
@@ -15,17 +13,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
 import org.springframework.jdbc.core.namedparam.ParsedSql;
-import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.stereotype.Component;
 
 import java.sql.Clob;
 import java.sql.PreparedStatement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by zy-xx on 16/1/21.
  */
 @Component
+@Deprecated
 public class CallBackAdapter {
     private static final Log logger = LogFactory.getLog(CallBackAdapter.class);
 

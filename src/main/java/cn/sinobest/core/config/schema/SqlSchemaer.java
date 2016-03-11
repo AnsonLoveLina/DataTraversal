@@ -43,46 +43,23 @@ public class SqlSchemaer {
         return schemaName;
     }
 
-    public IAnalyzer getAnalyzer() {
-        if (analyzer==null){
-            analyzer = (IAnalyzer) SpringContextInit.getBeanByAware("regularAnalyzer",this);
-        }
-        return analyzer;
-    }
-
-    public Set<String> getColumns() {
+    public void parseAndSetOtherVar(){
         if (this.columns.isEmpty()){
             this.columns.addAll(SqlUtil.getColumns(getTraverseQuery().toString()));
 
             this.columns.addAll(getAnalyzerResultColumns());
         }
-        return columns;
-    }
-
-    public ResultSql getInsertSql() {
         if (insertSql == null && !getInsertColumns().isEmpty()){
             String insertSqlSource = SqlUtil.getInsertSql(getResultTable(),getInsertColumns());
             this.insertSql = new ResultSql(insertSqlSource);
         }
-        return insertSql;
-    }
-
-    public ResultSql getEndUpdateSql() {
         if (endUpdateSql == null && StringUtil.isNotBlank(getTraverseQuery().getEndUpdateSql())){
             endUpdateSql = new ResultSql(getTraverseQuery().getEndUpdateSql());
         }
-        return endUpdateSql;
-    }
-
-    public Set<String> getTraverseColumns(){
         if (traverseColumns.isEmpty()){
             traverseColumns.addAll(getColumns());
             traverseColumns.removeAll(getAnalyzerResultColumns());
         }
-        return traverseColumns;
-    }
-
-    public Set<String> getInsertColumns() {
         if (insertColumns.isEmpty()){
             insertColumns.addAll(getColumns());
             if(!getAnalyzerColumns().isEmpty()){
@@ -90,6 +67,32 @@ public class SqlSchemaer {
             }
             insertColumns.remove(primaryKeyName);
         }
+        if (analyzer==null){
+            analyzer = (IAnalyzer) SpringContextInit.getBeanByAware("regularAnalyzer",this);
+        }
+    }
+
+    public IAnalyzer getAnalyzer() {
+        return analyzer;
+    }
+
+    public Set<String> getColumns() {
+        return columns;
+    }
+
+    public ResultSql getInsertSql() {
+        return insertSql;
+    }
+
+    public ResultSql getEndUpdateSql() {
+        return endUpdateSql;
+    }
+
+    public Set<String> getTraverseColumns(){
+        return traverseColumns;
+    }
+
+    public Set<String> getInsertColumns() {
         return insertColumns;
     }
 

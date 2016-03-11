@@ -1,7 +1,7 @@
 package cn.sinobest.core.service;
 
 import cn.sinobest.core.config.schema.Schemaer;
-import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
+import cn.sinobest.core.handler.IRowCallBackHandler;
 import cn.sinobest.core.stamp.StampManager;
 import com.google.common.base.Preconditions;
 import org.apache.commons.logging.Log;
@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 
 /**
@@ -22,7 +21,7 @@ import javax.annotation.Resource;
 @Component
 @Scope(value = "prototype")
 @Lazy
-public class TraverseDataService {
+public class TraverseDataService implements ITraverseDataService {
     private static final Log logger = LogFactory.getLog(TraverseDataService.class);
 
     @Resource(name = "jdbcTemplate")
@@ -33,20 +32,16 @@ public class TraverseDataService {
     @Autowired
     private StampManager timeStampManager;
 
-    private IRowAnalyzerCallBackHandler rowCallbackHandler;
+    private IRowCallBackHandler rowCallbackHandler;
 
-    public TraverseDataService(Schemaer schemaer,IRowAnalyzerCallBackHandler rowCallbackHandler) {
+    public void initService(Schemaer schemaer,IRowCallBackHandler rowCallbackHandler){
         Preconditions.checkNotNull(schemaer);
         Preconditions.checkNotNull(rowCallbackHandler);
         this.schemaer = schemaer;
         this.rowCallbackHandler = rowCallbackHandler;
         if(schemaer==null)
             logger.error(schemaer.getFullSchemaer().toString()+"in traverseConfig didn't exists!");
-//        initRegex();
-    }
 
-    @PostConstruct
-    public void init(){
         timeStampManager.init(schemaer.getFullSchemaer().getTimestampComment(), schemaer.getFullSchemaer().getTimestampKey());
     }
 
@@ -54,16 +49,16 @@ public class TraverseDataService {
         try {
 //            Long start = System.currentTimeMillis();
             if(!timeStampManager.isComplete()) {
-                timeStampManager.incrementBefore();
-                try{
-                    rowCallbackHandler.setComplete(false,schemaer);
+                timeStampManager.increment();
+//                try{
+                    rowCallbackHandler.initCallBackHandler(false, schemaer);
                     jdbcTemplate.query(schemaer.getDetailSchemaer().getTraverseQuery().toString(), new Object[]{timeStampManager.getIncrementIdenti()}, rowCallbackHandler);
-                }finally {
-                    timeStampManager.incrementFinally();
-                }
+//                }finally {
+//                    timeStampManager.incrementFinally();
+//                }
             }else{
-                timeStampManager.completeBefore();
-                rowCallbackHandler.setComplete(true,schemaer);
+                timeStampManager.complete();
+                rowCallbackHandler.initCallBackHandler(true, schemaer);
                 jdbcTemplate.query(schemaer.getFullSchemaer().getTraverseQuery().toString(), rowCallbackHandler);
             }
 //            Long end = System.currentTimeMillis()-start;

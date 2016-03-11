@@ -3,7 +3,7 @@ package cn.sinobest.job;
 import cn.sinobest.core.common.init.SpringContextInit;
 import cn.sinobest.core.config.schema.Schemaer;
 import cn.sinobest.core.config.schema.SchemaerFactory;
-import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
+import cn.sinobest.core.handler.IRowCallBackHandler;
 import cn.sinobest.core.service.TraverseDataService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,18 +17,19 @@ public class TraverseJob {
 
     private String serviceName;
 
-    private IRowAnalyzerCallBackHandler callBackHandler;
+    private IRowCallBackHandler callBackHandler;
 
     private TraverseDataService traverseDataService;
 
     public void init(){
-            Schemaer schemaer = SchemaerFactory.getSchema(serviceName);
+        Schemaer schemaer = SchemaerFactory.getSchema(serviceName);
 //            try {
-                //为了不多写工厂奇懒无比
+        //为了不多写工厂奇懒无比
 //                IRowAnalyzerCallBackHandler callBackHandler = (IRowAnalyzerCallBackHandler) SpringContextInit.getContext().getBean(callBackHandlerBeanName);
 //                callBackHandler.init(schemaer);
 
-                traverseDataService = (TraverseDataService) SpringContextInit.getContext().getBean("traverseDataService",schemaer,callBackHandler);
+        traverseDataService = (TraverseDataService) SpringContextInit.getContext().getBean("traverseDataService");
+        traverseDataService.initService(schemaer, callBackHandler);
 //            }catch (ClassCastException e){
 //                logger.error(callBackHandler+"不属于IRowAnalyzerCallBackHandler的实现！\n"+e.getMessage(),e);
 //            }
@@ -36,7 +37,7 @@ public class TraverseJob {
     }
 
     public void execute(){
-        logger.info("任务运行开始！");
+        logger.trace("任务运行开始！");
         traverseDataService.execute();
     }
 
@@ -44,7 +45,7 @@ public class TraverseJob {
         this.serviceName = serviceName;
     }
 
-    public void setCallBackHandler(IRowAnalyzerCallBackHandler callBackHandler) {
+    public void setCallBackHandler(IRowCallBackHandler callBackHandler) {
         this.callBackHandler = callBackHandler;
     }
 }

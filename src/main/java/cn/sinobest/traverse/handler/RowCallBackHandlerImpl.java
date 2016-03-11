@@ -6,11 +6,11 @@ import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.schema.ResultSql;
 import cn.sinobest.core.config.schema.Schemaer;
 import cn.sinobest.core.config.schema.SqlSchemaer;
-import cn.sinobest.core.handler.IRowAnalyzerCallBackHandler;
+import cn.sinobest.core.handler.IRowCallBackHandler;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
-import cn.sinobest.traverse.io.IBatchCommiter;
 import cn.sinobest.traverse.po.InsertParamObject;
 import cn.sinobest.traverse.relolver.IExpressRelolver;
+import com.alibaba.druid.util.JdbcUtils;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
@@ -18,17 +18,18 @@ import com.google.common.collect.Sets;
 import jodd.typeconverter.Convert;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -39,8 +40,8 @@ import java.util.concurrent.*;
 @Component(value = "analyzerCallBackHandler")
 @Scope(value = "prototype")
 @Lazy
-public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandler {
-    private static final Log logger = LogFactory.getLog(RowAnalyzerCallBackHandlerImpl.class);
+public class RowCallBackHandlerImpl implements IRowCallBackHandler {
+    private static final Log logger = LogFactory.getLog(RowCallBackHandlerImpl.class);
 
     @Resource(name = "expressRelolver")
     IExpressRelolver relolver;
@@ -49,9 +50,12 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
 
     private int concurrentNum;
 
+    @Autowired
+    private DataSource dataSource;
+
 
     @Override
-    public void setComplete(boolean isComplete,Schemaer schemaer) {
+    public void initCallBackHandler(boolean isComplete, Schemaer schemaer) {
         Preconditions.checkNotNull(schemaer);
         //spring初始化的情况
         if (schemaer == null)
@@ -112,7 +116,7 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         @Override
         public void run() {
             Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps, analyzer, analyzerColumns);
-//            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
+            processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
         }
     }
 
@@ -136,25 +140,77 @@ public class RowAnalyzerCallBackHandlerImpl implements IRowAnalyzerCallBackHandl
         }
     }
 
+    /**
+     * 处理业务
+     * 这么不优雅的方式，早晚改了它
+     * @param insertSql
+     * @param endUpdateSql
+     * @param paramSet
+     */
     private void processBiz(ResultSql insertSql, ResultSql endUpdateSql, Set<InsertParamObject> paramSet) {
         Preconditions.checkNotNull(insertSql);
-        IBatchCommiter insertCommiter = insertSql.getResultSqlCommiter();
-        for (InsertParamObject paramObject:paramSet){
-            Map<String,String> param = paramObject.getParamMap();
-            Object[] params = SqlUtil.getParam(insertSql.getResultSql(),param);
-            insertCommiter.setObjects(params);
-        }
-//        insertCommiter.executeAndCommit();
-        if (endUpdateSql.getResultSql()!=null){
-            IBatchCommiter endUpdateCommiter = endUpdateSql.getResultSqlCommiter();
+        Connection connection = null;
+        PreparedStatement insertPS = null;
+        try{
+            connection = dataSource.getConnection();
+            insertPS = connection.prepareStatement(insertSql.getResultSql().toString());
             for (InsertParamObject paramObject:paramSet){
                 Map<String,String> param = paramObject.getParamMap();
-                Object[] params = SqlUtil.getParam(endUpdateSql.getResultSql(),param);
-                endUpdateCommiter.setObjects(params);
+                Object[] params = SqlUtil.getParam(insertSql.getResultSql(),param);
+                for (int i=0;i<params.length;i++){
+                    insertPS.setObject(i + 1, params[i]);
+                }
+                insertPS.addBatch();
             }
-//            endUpdateCommiter.executeAndCommit();
+                insertPS.executeBatch();
+                connection.commit();
+         }catch (SQLException e){
+            //如果是唯一约束导致的错误则再运行一次
+            if(e.getMessage().toLowerCase().indexOf("ora-00001")!=-1){
+                processBizExact(insertSql, endUpdateSql, paramSet,insertPS,connection);
+            }else{
+                logger.error("结果数据存库出错！",e);
+            }
+        }finally {
+            JdbcUtils.close(insertPS);
+            JdbcUtils.close(connection);
         }
+    }
 
+    /**
+     * 本来准备放一个方法的，后面觉得怕看不懂，分开吧，代码是给人看的
+     * @param insertSql
+     * @param endUpdateSql
+     * @param paramSet
+     * @param insertPS
+     * @param connection
+     */
+    private void processBizExact(ResultSql insertSql, ResultSql endUpdateSql, Set<InsertParamObject> paramSet, PreparedStatement insertPS, Connection connection) {
+        Preconditions.checkNotNull(insertSql);
+        try{
+            for (InsertParamObject paramObject:paramSet){
+                Map<String,String> param = paramObject.getParamMap();
+                Object[] params = SqlUtil.getParam(insertSql.getResultSql(),param);
+                for (int i=0;i<params.length;i++){
+                    insertPS.setObject(i + 1, params[i]);
+                }
+                try {
+                    insertPS.execute();
+                }catch (SQLException e){
+                    if(e.getMessage().toLowerCase().indexOf("ora-00001")!=-1){
+                        logger.error(Arrays.toString(params)+"重复！");
+                    }else{
+                        logger.error("结果数据存库出错！",e);
+                    }
+                }
+                connection.commit();
+            }
+        }catch (SQLException e){
+            logger.error("结果数据存库出错！",e);
+        }finally {
+            JdbcUtils.close(insertPS);
+            JdbcUtils.close(connection);
+        }
     }
 
     //遍历使用的迭代遍历，如果集合在JUC环境外，线程不安全

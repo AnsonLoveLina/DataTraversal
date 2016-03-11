@@ -3,37 +3,25 @@ package cn.sinobest.druid;
 import cn.sinobest.core.config.po.Data;
 import cn.sinobest.core.config.po.DetailQuery;
 import cn.sinobest.core.config.po.TraverseConfigSchema;
-import cn.sinobest.traverse.handler.RowAnalyzerCallBackHandlerImpl;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import jodd.bean.BeanTool;
-import jodd.bean.BeanUtil;
-import jodd.introspector.ClassDescriptor;
-import jodd.introspector.ClassIntrospector;
-import jodd.util.ArraysUtil;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterUtils;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.annotation.Resource;
 import javax.sql.DataSource;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 /**
  * Created by zhouyi1 on 2016/1/19 0019.
@@ -104,21 +92,20 @@ public class JobTest {
 
 //    @Test
     public void test3(){
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
         DataSource ds = (DataSource) applicationContext.getBean("dataSource");
         try {
             Connection conn = ds.getConnection();
-            PreparedStatement ps = conn.prepareStatement("insert into B_YPGJ_YPKJ_AJBSHGX(systemid,ajmc) values (getid(null),?)");
+            PreparedStatement ps = conn.prepareStatement("insert into B_YPGJ_YPKJ_AJBSHGX(systemid,ajmc) values (?,?)");
             for (int i = 0; i < 99; i++) {
-                ps.setObject(1,"ajmc"+i);
-                ps.addBatch();
-
-                if (i==80){
-                    ps.executeBatch();
-                    conn.commit();
+                ps.setObject(1,i);
+                ps.setObject(2, "ajmc" + i);
+                try {
+                    ps.execute();
+                } catch (SQLException e) {
+                    e.printStackTrace();
                 }
             }
-            ps.executeBatch();
             conn.commit();
 
 
@@ -162,7 +149,7 @@ public class JobTest {
 
     @Test
     public void test6(){
-        Executor executor = Executors.newCachedThreadPool();
-
+        Object[] os = new Object[]{1,2,3};
+        System.out.println(Arrays.toString(os));
     }
 }

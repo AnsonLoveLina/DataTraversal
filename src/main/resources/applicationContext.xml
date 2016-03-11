@@ -68,5 +68,5 @@
        </bean>
 
        <import resource="applicationContext-task.xml"/>
-       <import resource="applicationContext-jms.xml"/>
+       <!--<import resource="applicationContext-jms.xml"/>-->
 </beans>

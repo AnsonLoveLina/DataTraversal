@@ -16,8 +16,10 @@ public class Schemaer {
     public Schemaer(Data data) {
         BeanTool.copy(data,fullSchemaer);
         fullSchemaer.setTraverseQuery(data.getFullQuery());
+        fullSchemaer.parseAndSetOtherVar();
         BeanTool.copy(data, detailSchemaer);
         detailSchemaer.setTraverseQuery(data.getDetailQuery());
+        fullSchemaer.parseAndSetOtherVar();
     }
 
     public SqlSchemaer getFullSchemaer() {

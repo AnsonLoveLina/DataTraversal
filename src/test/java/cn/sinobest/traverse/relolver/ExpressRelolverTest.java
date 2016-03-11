@@ -1,14 +1,14 @@
 package cn.sinobest.traverse.relolver;
 
+import cn.sinobest.core.common.util.PrintUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.traverse.po.InsertParamObject;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.HashMap;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by zy-xx on 16/1/26.
@@ -30,9 +30,9 @@ public class ExpressRelolverTest {
         rowMap.put("lxfs","周毅身份证： 430102198704020515 qq号码：326236882 还有一些其他43010219870402051X信息？");
         ExpressRelolver relolver = new ExpressRelolver();
         AnalyzerColumn analyzerColumn = new AnalyzerColumn("lxfs");
-        analyzerColumn.setSpecialExpress("get('bshlx')=='003'/put('rylx','05')");
+        analyzerColumn.setSpecialExpress("get('bshlx')=='003' && get('ajbh')=='234234'/put('rylx','05')");
         InsertParamObject paramObject = new InsertParamObject(rowMap,analyzerColumn);
         relolver.explain(paramObject);
-        System.out.println();
+        PrintUtil.printParamObjectSet(Sets.newHashSet(paramObject));
     }
 }
