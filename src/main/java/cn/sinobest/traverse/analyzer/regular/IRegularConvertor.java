@@ -7,5 +7,5 @@ public interface IRegularConvertor {
 
     public String getRealRegex(String regex);
 
-    public String getRealValue(String bshid,String bshlx);
+    public String getRealValue(String bshid, String bshlx);
 }

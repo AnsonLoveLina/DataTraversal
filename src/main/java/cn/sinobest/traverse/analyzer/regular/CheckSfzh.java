@@ -154,7 +154,7 @@ public class CheckSfzh {
 
         //for test
         public static void main(String[] args) {
-            System.out.println(CheckSfzh.validate("43010219870402051X"));
+            System.out.println(CheckSfzh.validate("440224198901021010"));
         }
 
 }

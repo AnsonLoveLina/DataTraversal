@@ -52,8 +52,8 @@
             select 'zaj' as zymc,(select RESERVATION07 from b_asj_jq j where j.ajbh = t.ajbh and rownum=1) jqms,(select body from b_asj_bl b where b.ajbh = t.ajbh and rownum=1) blxx,systemid as ajid,zyaq,ajbh,ajmc,'99' rylx from B_ASJ_AJ t
         </fullQuery>
         <analyzerColumn>JQMS</analyzerColumn>
-        <analyzerColumn>BLXX</analyzerColumn>
-        <analyzerColumn specialExpress="get('bshlx')=='003'/put('rylx','05')">ZYAQ</analyzerColumn>
+        <analyzerColumn specialExpress="get('bshlx')=='006' &amp;&amp; get('ajbh')!='A4401066000002014070003'/put('rylx','05');put('yy','yy')">BLXX</analyzerColumn>
+        <analyzerColumn specialExpress="get('bshlx')=='006'/put('rylx','05');put('xx','xx')">ZYAQ</analyzerColumn>
         <analyzerResultColumn>BSHID</analyzerResultColumn>
         <analyzerResultColumn>BSHLX</analyzerResultColumn>
     </data>

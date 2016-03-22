@@ -61,6 +61,7 @@ public class TraverseDataService implements ITraverseDataService {
                 rowCallbackHandler.initCallBackHandler(true, schemaer);
                 jdbcTemplate.query(schemaer.getFullSchemaer().getTraverseQuery().toString(), rowCallbackHandler);
             }
+            rowCallbackHandler.destoryCallBackHandler();
 //            Long end = System.currentTimeMillis()-start;
 //            System.out.println("countTime = " + end/1000);
         } catch (Exception e) {

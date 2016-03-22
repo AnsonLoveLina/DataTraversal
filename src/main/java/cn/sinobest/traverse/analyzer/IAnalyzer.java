@@ -3,7 +3,6 @@ package cn.sinobest.traverse.analyzer;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.traverse.po.InsertParamObject;
 
-import java.util.HashMap;
 import java.util.Set;
 
 /**
@@ -12,5 +11,5 @@ import java.util.Set;
  * Created by zy-xx on 16/1/24.
  */
 public interface IAnalyzer {
-    public Set<InsertParamObject> analyzerStr(String analyzerSource,AnalyzerColumn analyzerColumn);
+    public Set<InsertParamObject> analyzerStr(String analyzerSource, AnalyzerColumn analyzerColumn);
 }

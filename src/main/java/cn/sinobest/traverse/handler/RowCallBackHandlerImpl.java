@@ -1,12 +1,10 @@
 package cn.sinobest.traverse.handler;
 
-import cn.sinobest.core.common.util.PrintUtil;
 import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.schema.ResultSql;
-import cn.sinobest.core.config.schema.Schemaer;
-import cn.sinobest.core.config.schema.SqlSchemaer;
 import cn.sinobest.core.handler.IRowCallBackHandler;
+import cn.sinobest.core.handler.RowCallBackHandlerDefaultImpl;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
 import cn.sinobest.traverse.po.InsertParamObject;
 import cn.sinobest.traverse.relolver.IExpressRelolver;
@@ -30,7 +28,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.*;
 
 /**
  * Created by zhouyi1 on 2016/1/19 0019.
@@ -40,66 +37,24 @@ import java.util.concurrent.*;
 @Component(value = "analyzerCallBackHandler")
 @Scope(value = "prototype")
 @Lazy
-public class RowCallBackHandlerImpl implements IRowCallBackHandler {
+public class RowCallBackHandlerImpl extends RowCallBackHandlerDefaultImpl implements IRowCallBackHandler {
     private static final Log logger = LogFactory.getLog(RowCallBackHandlerImpl.class);
 
     @Resource(name = "expressRelolver")
     IExpressRelolver relolver;
 
-    private SqlSchemaer sqlSchemaer;
-
-    private int concurrentNum;
-
     @Autowired
     private DataSource dataSource;
 
-
     @Override
-    public void initCallBackHandler(boolean isComplete, Schemaer schemaer) {
-        Preconditions.checkNotNull(schemaer);
-        //spring初始化的情况
-        if (schemaer == null)
-            return;
-        if (isComplete) {
-            sqlSchemaer = schemaer.getFullSchemaer();
-        } else {
-            sqlSchemaer = schemaer.getDetailSchemaer();
-        }
+    public void destoryCallBackHandler() {
 
-        concurrentNum = sqlSchemaer.getTraverseQuery().getConcurrentNum();
-        if (concurrentNum > 0) {
-            initExecutor(concurrentNum);
-        }
     }
 
 //    public RowAnalyzerCallBackHandlerImpl(Schemaer schemaer) {
 //        Preconditions.checkNotNull(schemaer);
 //        this.schemaer = schemaer;
 //    }
-
-    public void initExecutor(int concurrentNum) {
-        //目前先采用队列作为缓冲区，提高安全性和吞吐
-        BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>(15000);
-        ExecutorService taskServcie = new ThreadPoolExecutor(concurrentNum, concurrentNum,
-                0L, TimeUnit.MILLISECONDS,
-                queue, blockingPolicy);
-        executor.set(taskServcie);
-    }
-
-    RejectedExecutionHandler blockingPolicy = new RejectedExecutionHandler() {
-
-        public void rejectedExecution(Runnable task,
-                                      ThreadPoolExecutor executor) {
-            if (!executor.isShutdown())
-                try {
-                    executor.getQueue().put(task);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-        }
-
-    };
-    ThreadLocal<ExecutorService> executor = new ThreadLocal<ExecutorService>();
 
     private class Task implements Runnable {
 
@@ -126,7 +81,7 @@ public class RowCallBackHandlerImpl implements IRowCallBackHandler {
 
         HashMap<String, String> rowMaps = getRowMap(resultSet);
         if (rowMaps.isEmpty()) {
-            logger.trace("该条数据没有有效数据!");
+            logger.info("该条数据没有有效数据!");
             return;
         }
 //        System.out.println(rowMaps);
@@ -136,7 +91,7 @@ public class RowCallBackHandlerImpl implements IRowCallBackHandler {
             processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
         } else if (concurrentNum > 0) {
 //            Set<AnalyzerColumn> analyzerColumns = Sets.newHashSet(sqlSchemaer.getAnalyzerColumns());
-            executor.get().execute(new Task(rowMaps, sqlSchemaer.getAnalyzer(), sqlSchemaer.getAnalyzerColumns()));
+            processJucBiz(new Task(rowMaps, sqlSchemaer.getAnalyzer(), sqlSchemaer.getAnalyzerColumns()));
         }
     }
 
@@ -235,7 +190,7 @@ public class RowCallBackHandlerImpl implements IRowCallBackHandler {
             paramObject.mergeParamMap(paramMap);
             relolver.explain(paramObject);
         }
-        PrintUtil.printParamObjectSet(paramObjectSet);
+//        PrintUtil.printParamObjectSet(paramObjectSet);
         return paramObjectSet;
     }
 
@@ -245,6 +200,9 @@ public class RowCallBackHandlerImpl implements IRowCallBackHandler {
         List<AnalyzerColumn> analyzerColumns = sqlSchemaer.getAnalyzerColumns();
         Set<String> columns = sqlSchemaer.getColumns();
         Set<String> traverseColumns = sqlSchemaer.getTraverseColumns();
+        if (analyzerColumns.isEmpty() || analyzerColumns.size()==0){
+            return new HashMap<String, String>();
+        }
         int count = 0;
         for (String columnName : columns) {
             String columnValue = null;
@@ -257,7 +215,8 @@ public class RowCallBackHandlerImpl implements IRowCallBackHandler {
             rowMap.put(columnName, columnValue);
         }
 
-        return analyzerColumns.size() > count ? rowMap : new HashMap<String, String>();
+        //加这么个判断只是为了安全！其实不必要
+        return analyzerColumns.size() >= count ? rowMap : new HashMap<String, String>();
     }
 
 

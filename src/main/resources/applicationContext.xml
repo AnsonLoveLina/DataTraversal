@@ -60,7 +60,7 @@
               <property name="statLogger" ref="myOracleLogger" />
 
               <!-- 配置监控统计拦截的filters -->
-              <property name="filters" value="${oracle.jdbc.filters}" />
+              <!--<property name="filters" value="${oracle.jdbc.filters}" />-->
 
        </bean>
        <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >

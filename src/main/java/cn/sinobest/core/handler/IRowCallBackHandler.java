@@ -8,4 +8,5 @@ import org.springframework.jdbc.core.RowCallbackHandler;
  */
 public interface IRowCallBackHandler extends RowCallbackHandler {
     public void initCallBackHandler(boolean isComplete, Schemaer schemaer);
+    public void destoryCallBackHandler();
 }
