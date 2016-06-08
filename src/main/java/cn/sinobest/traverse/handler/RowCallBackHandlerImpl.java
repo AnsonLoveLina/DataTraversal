@@ -64,13 +64,13 @@ public class RowCallBackHandlerImpl extends RowCallBackHandlerDefaultImpl implem
 
         public Task(HashMap<String, String> rowMaps, IAnalyzer analyzer, List<AnalyzerColumn> analyzerColumns) {
             this.rowMaps = rowMaps;
-            this.analyzer = analyzer;
-            this.analyzerColumns = analyzerColumns;
+//            this.analyzer = analyzer;
+//            this.analyzerColumns = analyzerColumns;
         }
 
         @Override
         public void run() {
-            Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps, analyzer, analyzerColumns);
+            Set<InsertParamObject> paramObjects = analyzerRowMap(rowMaps, sqlSchemaer.getAnalyzer(), sqlSchemaer.getAnalyzerColumns());
             processBiz(sqlSchemaer.getInsertSql(), sqlSchemaer.getEndUpdateSql(), paramObjects);
         }
     }
@@ -113,7 +113,7 @@ public class RowCallBackHandlerImpl extends RowCallBackHandlerDefaultImpl implem
                 Map<String,String> param = paramObject.getParamMap();
                 Object[] params = SqlUtil.getParam(insertSql.getResultSql(),param);
                 for (int i=0;i<params.length;i++){
-                    insertPS.setObject(i + 1, params[i]);
+                    insertPS.setObject(i + 1, params[i]==null?"未知":params[i]);
                 }
                 insertPS.addBatch();
             }
@@ -147,7 +147,7 @@ public class RowCallBackHandlerImpl extends RowCallBackHandlerDefaultImpl implem
                 Map<String,String> param = paramObject.getParamMap();
                 Object[] params = SqlUtil.getParam(insertSql.getResultSql(),param);
                 for (int i=0;i<params.length;i++){
-                    insertPS.setObject(i + 1, params[i]);
+                    insertPS.setObject(i + 1, params[i]==null?"未知":params[i]);
                 }
                 try {
                     insertPS.execute();
@@ -175,7 +175,8 @@ public class RowCallBackHandlerImpl extends RowCallBackHandlerDefaultImpl implem
         for (int i = 0; i < analyzerColumns.size(); i++) {
             AnalyzerColumn analyzerColumn = analyzerColumns.get(i);
             String analyzerSource = rowMap.get(analyzerColumn.toString());
-            paramObjectSet.addAll(analyzer.analyzerStr(analyzerSource, analyzerColumn));
+            Set<InsertParamObject> analyzerStrSets = analyzer.analyzerStr(analyzerSource, analyzerColumn);
+            paramObjectSet.addAll(analyzerStrSets);
         }
 
         rowMap = Maps.filterKeys(rowMap, new Predicate<String>() {

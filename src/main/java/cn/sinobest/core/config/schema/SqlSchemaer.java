@@ -5,12 +5,12 @@ import cn.sinobest.core.common.util.SqlUtil;
 import cn.sinobest.core.config.po.AnalyzerColumn;
 import cn.sinobest.core.config.po.ITraverseQuery;
 import cn.sinobest.traverse.analyzer.IAnalyzer;
-import cn.sinobest.traverse.io.PreparedStatementCommiter;
 import jodd.util.StringUtil;
-import org.springframework.jdbc.core.namedparam.ParsedSql;
 
-import javax.sql.DataSource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by zy-xx on 16/1/24.
@@ -43,6 +43,9 @@ public class SqlSchemaer {
         return schemaName;
     }
 
+    /**
+     * 这TMD都不用FACTORYBEAN只是为了CONF的PO类更加灵活
+     */
     public void parseAndSetOtherVar(){
         if (this.columns.isEmpty()){
             this.columns.addAll(SqlUtil.getColumns(getTraverseQuery().toString()));
