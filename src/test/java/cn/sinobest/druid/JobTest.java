@@ -27,21 +27,37 @@ import java.util.Set;
  * Created by zhouyi1 on 2016/1/19 0019.
  */
 //@RunWith(SpringJUnit4ClassRunner.class)
-//@ContextConfiguration(locations = {"classpath:applicationContext-test.xml"})
+//@ContextConfiguration(locations = {"classpath:applicationContext-testDb.xml"})
 public class JobTest {
 
-//    @Test
+    @Test
     public void test() {
-        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-test.xml");
+        ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
         try {
-            String sql = "select 'zaj' as zymc,(select RESERVATION07 from b_asj_jq j where j.ajbh = t.ajbh and rownum=1) jqms,(select body from b_asj_bl b where b.ajbh = t.ajbh and rownum=1) blxx,systemid as ajid,zyaq,ajbh,ajmc,'99' rylx from B_ASJ_AJ t";
+            String sql = "SELECT DISTINCT a.idcardno,\n" +
+                    "                'f6405395-c5f5-48c8-9644-4fba4d10d302',\n" +
+                    "                'PCS3707201606200000000000045099'\n" +
+                    "  FROM t_bz_asj_ajxyr a\n" +
+                    " WHERE a.inputtime >= to_date(to_char('2016-04-19'), 'yyyy-mm-dd')\n" +
+                    "   and a.inputtime <= to_date(to_char('2016-06-20'), 'yyyy-mm-dd')\n" +
+                    "   and a.door not like rtrim('520000', '0') || '%'\n" +
+                    "   and not exists (select b.zjhm\n" +
+                    "          from t_bz_sqjw_syrk_ryxxb_ldrk b\n" +
+                    "         where b.zjhm = a.idcardno)";
             JdbcTemplate jdbcTemplate = (JdbcTemplate) applicationContext.getBean("jdbcTemplate");
             jdbcTemplate.query(sql, new RowCallbackHandler() {
                 @Override
                 public void processRow(ResultSet resultSet) throws SQLException {
-                    System.out.println(resultSet.getObject("AJMC"));
+                    System.out.println(resultSet.getObject("AJBH"));
                 }
             });
+//            DataSource ds = (DataSource) applicationContext.getBean("dataSource");
+//            Connection connection = ds.getConnection();
+//            PreparedStatement ps = connection.prepareStatement(sql);
+//            ResultSet rs = ps.executeQuery();
+//            while(rs.next()){
+//                System.out.println(rs.getObject("AJBH"));
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -26,10 +26,10 @@
     </bean>
 
     <task:scheduled-tasks>
-        <!--<task:scheduled ref="ajTraverseJob" method="execute" fixed-delay="10000"/>-->
-        <!--<task:scheduled ref="wpTraverseJob" method="execute" fixed-delay="10000"/>-->
+        <task:scheduled ref="ajTraverseJob" method="execute" fixed-delay="10000"/>
+        <task:scheduled ref="wpTraverseJob" method="execute" fixed-delay="10000"/>
         <task:scheduled ref="xyyTraverseJob" method="execute" fixed-delay="10000"/>
-        <!--<task:scheduled ref="ryTraverseJob" method="execute" fixed-delay="10000"/>-->
+        <task:scheduled ref="ryTraverseJob" method="execute" fixed-delay="10000"/>
     </task:scheduled-tasks>
 
 

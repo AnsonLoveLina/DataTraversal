@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
-       xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
        <import resource="applicationContext-test.xml"/>
+       <import resource="applicationContext-testSynonym.xml"/>
 
        <bean id="initDataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
               <property name="username" value="${oracle.jdbc.username}"/>
@@ -56,6 +55,12 @@
 
               <!--日志-->
               <property name="statLogger" ref="myOracleLogger" />
+              
+              <property name="proxyFilters">
+                     <list>
+                            <ref bean="synSqlFilter"/>
+                     </list>
+              </property>
 
               <!-- 配置监控统计拦截的filters -->
               <property name="filters" value="${oracle.jdbc.filters}" />
