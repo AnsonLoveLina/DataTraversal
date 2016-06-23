@@ -3,9 +3,18 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+       <bean id="sqlHandler" class="cn.sinobest.druid.handler.OldSqlHandler"/>
+
+       <bean id="statementHandler" class="cn.sinobest.druid.handler.StatementHandler"/>
 
        <bean id="synSqlFilter" class="cn.sinobest.druid.SynonymSqlFilter">
               <property name="context" ref="context"/>
+           <property name="handlers">
+               <list>
+                   <ref bean="sqlHandler"/>
+                   <ref bean="statementHandler"/>
+               </list>
+           </property>
        </bean>
 
        <bean id="context" class="cn.sinobest.druid.SynonymSqlContext">

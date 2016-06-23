@@ -1,5 +1,8 @@
 package cn.sinobest.druid;
 
+import cn.sinobest.druid.handler.IHandler;
+import cn.sinobest.druid.handler.ISQLHandler;
+import cn.sinobest.druid.handler.IStatementHandler;
 import com.alibaba.druid.filter.Filter;
 import com.alibaba.druid.filter.FilterAdapter;
 import com.alibaba.druid.filter.FilterChain;
@@ -10,6 +13,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -27,6 +31,8 @@ public class SynonymSqlFilter extends FilterAdapter implements Filter {
 
     private SynonymSqlContext context;
 
+    private List<IHandler> handlers = new ArrayList<IHandler>();
+
     public String getSyn(String oldSql,StatementProxy statement){
         Preconditions.checkNotNull(oldSql);
         String newSql = null;
@@ -43,12 +49,22 @@ public class SynonymSqlFilter extends FilterAdapter implements Filter {
             Pattern pattern = Pattern.compile(sqlRegex);
             Matcher matcher = pattern.matcher(oldSql);
             if (matcher.matches()){
-                Map<String,String> params = SqlUtil.getParams(sqlTemp, oldSql, context.getCharSet());
-                String newSqlTemp = entry.getValue();
-                newSql = SqlUtil.getNewSql(newSqlTemp, params, oldSql);
+//                ISQLHandler sqlHandler = new OldSqlHandler();
+////                Map<String,String> params = SqlUtil.getParams(sqlTemp, oldSql, context.getCharSet());
+////                String newSqlTemp = entry.getValue();
+////                newSql = SqlUtil.getNewSql(newSqlTemp, params, oldSql);
+//                newSql = sqlHandler.executeMatchSql(oldSql,entry,context);
+//
+//                IStatementHandler statHandler = new StatementHandler();
+//                statement = statHandler.executeMatchSql(statement, entry, context);
 
-                StatementHandler handler = new StatementHandler();
-                handler.execute(statement,entry);
+                for (IHandler handler:handlers){
+                    if (handler instanceof ISQLHandler){
+                        newSql = ((ISQLHandler) handler).executeMatchSql(oldSql,entry,context);
+                    }else if (handler instanceof IStatementHandler){
+                        statement = ((IStatementHandler) handler).executeMatchSql(statement,entry,context);
+                    }
+                }
                 break;
             }
         }
@@ -76,5 +92,13 @@ public class SynonymSqlFilter extends FilterAdapter implements Filter {
 
     public void setContext(SynonymSqlContext context) {
         this.context = context;
+    }
+
+    public List<IHandler> getHandlers() {
+        return handlers;
+    }
+
+    public void setHandlers(List<IHandler> handlers) {
+        this.handlers = handlers;
     }
 }

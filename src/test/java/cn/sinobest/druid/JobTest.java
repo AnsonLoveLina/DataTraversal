@@ -34,16 +34,11 @@ public class JobTest {
     public void test() {
         ClassPathXmlApplicationContext applicationContext = new ClassPathXmlApplicationContext("applicationContext-testDb.xml");
         try {
-            String sql = "SELECT DISTINCT a.idcardno,\n" +
-                    "                'f6405395-c5f5-48c8-9644-4fba4d10d302',\n" +
-                    "                'PCS3707201606200000000000045099'\n" +
-                    "  FROM t_bz_asj_ajxyr a\n" +
-                    " WHERE a.inputtime >= to_date(to_char('2016-04-19'), 'yyyy-mm-dd')\n" +
-                    "   and a.inputtime <= to_date(to_char('2016-06-20'), 'yyyy-mm-dd')\n" +
-                    "   and a.door not like rtrim('520000', '0') || '%'\n" +
-                    "   and not exists (select b.zjhm\n" +
-                    "          from t_bz_sqjw_syrk_ryxxb_ldrk b\n" +
-                    "         where b.zjhm = a.idcardno)";
+            String sql = "SELECT DISTINCT A.zjhm from t_bz_ck_ryjbxx b,t_bz_ly_gnlkxx a\n" +
+                    "where a.rzsj>=to_char('2016-04-19')\n" +
+                    "and a.rzsj<=to_char('2016-06-20')\n" +
+                    "and a.gxdwbm like rtrim('520000','0')||'%'\n" +
+                    "and a.zjhm=b.PID";
             JdbcTemplate jdbcTemplate = (JdbcTemplate) applicationContext.getBean("jdbcTemplate");
             jdbcTemplate.query(sql, new RowCallbackHandler() {
                 @Override
